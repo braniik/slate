@@ -1,154 +1,164 @@
 package com.braniik.slate.ui.drawer
 
-import android.content.Context
-import android.content.Intent
-import android.graphics.drawable.Drawable
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Text
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.core.graphics.drawable.toBitmap
+import com.braniik.slate.data.HomeScreenApp
 import com.braniik.slate.data.LauncherSettings
-
-private val White = Color(0xFFFFFFFF)
-
-data class AppInfo(
-    val label: String,
-    val packageName: String,
-    val icon: Drawable
-)
-
-fun loadApps(context: Context): List<AppInfo> {
-    val intent = Intent(Intent.ACTION_MAIN).apply {
-        addCategory(Intent.CATEGORY_LAUNCHER)
-    }
-    return context.packageManager
-        .queryIntentActivities(intent, 0)
-        .sortedBy { it.loadLabel(context.packageManager).toString().lowercase() }
-        .map { info ->
-            AppInfo(
-                label = info.loadLabel(context.packageManager).toString(),
-                packageName = info.activityInfo.packageName,
-                icon = info.loadIcon(context.packageManager)
-            )
-        }
-}
-
-fun launchApp(context: Context, packageName: String) {
-    context.packageManager.getLaunchIntentForPackage(packageName)?.let {
-        it.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-        context.startActivity(it)
-    }
-}
-
+import com.braniik.slate.data.homeScreenAppsFlow
+import com.braniik.slate.data.saveHomeScreenApps
+import com.braniik.slate.ui.drawer.freescreen.FreescreenEditDialog
+import com.braniik.slate.ui.drawer.freescreen.HomeFreescreen
+import com.braniik.slate.ui.drawer.list.HomeList
+import com.braniik.slate.ui.drawer.list.ListEditDialog
+import com.braniik.slate.ui.theme.SlateSubtle
+import kotlinx.coroutines.launch
 @Composable
 fun AppDrawerScreen(settings: LauncherSettings) {
     val context = LocalContext.current
-    val apps = remember { loadApps(context) }
+    val scope = rememberCoroutineScope()
+    val allApps = remember { loadApps(context) }
 
-    if (settings.layoutMode == "grid") {
-        AppGrid(apps = apps, settings = settings, context = context)
-    } else {
-        AppList(apps = apps, settings = settings, context = context)
-    }
-}
+    val homeApps by context.homeScreenAppsFlow().collectAsState(initial = emptyList())
+    var mode by remember { mutableStateOf(HomeMode.NORMAL) }
+    var editingApp by remember { mutableStateOf<HomeScreenApp?>(null) }
 
-@Composable
-private fun AppGrid(apps: List<AppInfo>, settings: LauncherSettings, context: Context) {
-    val iconSize: Dp = when (settings.gridIconSize) {
-        "small" -> 44.dp
-        "large" -> 68.dp
-        else -> 56.dp
+    fun save(apps: List<HomeScreenApp>) {
+        scope.launch { context.saveHomeScreenApps(apps) }
     }
 
-    LazyVerticalGrid(
-        columns = GridCells.Fixed(settings.gridColumns),
-        contentPadding = PaddingValues(16.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp),
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
-        modifier = Modifier.fillMaxSize()
-    ) {
-        items(apps) { app ->
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(4.dp),
-                modifier = Modifier
-                    .clickable { launchApp(context, app.packageName) }
-                    .padding(vertical = 8.dp)
-            ) {
-                Image(
-                    bitmap = app.icon.toBitmap(iconSize.value.toInt(), iconSize.value.toInt()).asImageBitmap(),
-                    contentDescription = app.label,
-                    modifier = Modifier.size(iconSize)
-                )
-                if (settings.gridShowNames) {
-                    Text(
-                        text = app.label,
-                        fontSize = 10.sp,
-                        color = White,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                        textAlign = TextAlign.Center
+    Box(modifier = Modifier.fillMaxSize()) {
+        Column(modifier = Modifier.fillMaxSize()) {
+            Toolbar(
+                mode = mode,
+                onModeChange = { newMode ->
+                    mode = if (mode == newMode) HomeMode.NORMAL else newMode
+                }
+            )
+
+            when {
+                homeApps.isEmpty() && mode != HomeMode.ADDING -> EmptyState()
+
+                mode == HomeMode.ADDING -> {
+                    val existing = homeApps.map { it.packageName }.toSet()
+                    val available = allApps.filter { it.packageName !in existing }
+                    AddAppsOverlay(
+                        apps = available,
+                        onAdd = { info ->
+                            val (x, y) = nextFreescreenPos(homeApps.size)
+                            save(
+                                homeApps + HomeScreenApp(
+                                    packageName = info.packageName,
+                                    order = homeApps.size,
+                                    xPos = x,
+                                    yPos = y
+                                )
+                            )
+                        },
+                        onClose = { mode = HomeMode.NORMAL }
                     )
                 }
+
+                settings.layoutMode == "freescreen" -> HomeFreescreen(
+                    homeApps = homeApps,
+                    allApps = allApps,
+                    mode = mode,
+                    onTap = { app -> handleAppTap(app, mode, context, homeApps, ::save) { editingApp = it } },
+                    onPositionChanged = { app, newX, newY ->
+                        save(homeApps.map {
+                            if (it.packageName == app.packageName) it.copy(xPos = newX, yPos = newY) else it
+                        })
+                    }
+                )
+
+                else -> {
+                    val sortedApps = homeApps.sortedBy { it.order }
+                    HomeList(
+                        homeApps = sortedApps,
+                        allApps = allApps,
+                        mode = mode,
+                        onTap = { app -> handleAppTap(app, mode, context, homeApps, ::save) { editingApp = it } },
+                        onMoveUp = { app ->
+                            val idx = sortedApps.indexOf(app)
+                            if (idx > 0) save(swapOrder(sortedApps, idx, idx - 1))
+                        },
+                        onMoveDown = { app ->
+                            val idx = sortedApps.indexOf(app)
+                            if (idx < sortedApps.lastIndex) save(swapOrder(sortedApps, idx, idx + 1))
+                        }
+                    )
+                }
+            }
+        }
+
+        editingApp?.let { app ->
+            val info = allApps.find { it.packageName == app.packageName } ?: return@let
+            val onSave: (HomeScreenApp) -> Unit = { updated ->
+                save(homeApps.map { if (it.packageName == updated.packageName) updated else it })
+                editingApp = null
+            }
+            if (settings.layoutMode == "freescreen") {
+                FreescreenEditDialog(app, info, onDismiss = { editingApp = null }, onSave = onSave)
+            } else {
+                ListEditDialog(app, info, onDismiss = { editingApp = null }, onSave = onSave)
             }
         }
     }
 }
 
-@Composable
-private fun AppList(apps: List<AppInfo>, settings: LauncherSettings, context: Context) {
-    val textSize = when (settings.listTextSize) {
-        "small" -> 13.sp
-        "large" -> 19.sp
-        else -> 16.sp
+private fun handleAppTap(
+    app: HomeScreenApp,
+    mode: HomeMode,
+    context: android.content.Context,
+    homeApps: List<HomeScreenApp>,
+    save: (List<HomeScreenApp>) -> Unit,
+    openEdit: (HomeScreenApp) -> Unit
+) {
+    when (mode) {
+        HomeMode.NORMAL -> launchApp(context, app.packageName)
+        HomeMode.EDITING -> openEdit(app)
+        HomeMode.DELETING -> save(homeApps.filter { it.packageName != app.packageName })
+        HomeMode.ADDING -> {}
     }
+}
+private fun swapOrder(apps: List<HomeScreenApp>, i: Int, j: Int): List<HomeScreenApp> {
+    val result = apps.toMutableList()
+    val a = result[i]
+    val b = result[j]
+    result[i] = a.copy(order = b.order)
+    result[j] = b.copy(order = a.order)
+    return result
+}
+private fun nextFreescreenPos(count: Int): Pair<Float, Float> {
+    val cols = 4
+    val stepX = 90f
+    val stepY = 110f
+    return (16f + (count % cols) * stepX) to (16f + (count / cols) * stepY)
+}
 
-    LazyColumn(
-        contentPadding = PaddingValues(horizontal = 24.dp, vertical = 16.dp),
-        verticalArrangement = Arrangement.spacedBy(2.dp),
-        modifier = Modifier.fillMaxSize()
-    ) {
-        items(apps) { app ->
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(16.dp),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable { launchApp(context, app.packageName) }
-                    .padding(vertical = 10.dp)
-            ) {
-                if (settings.listShowIcons) {
-                    Image(
-                        bitmap = app.icon.toBitmap(40, 40).asImageBitmap(),
-                        contentDescription = app.label,
-                        modifier = Modifier.size(36.dp)
-                    )
-                }
-                Text(
-                    text = app.label,
-                    fontSize = textSize,
-                    color = White,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
-            }
+@Composable
+private fun EmptyState() {
+    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Text("nothing here yet", fontSize = 16.sp, color = SlateSubtle)
+            Text("tap + to add your apps", fontSize = 12.sp, color = SlateSubtle)
         }
     }
 }

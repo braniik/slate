@@ -2,12 +2,35 @@
 
 A minimal Android launcher. Clean by default, yours visually.
 
-⚠️⚠️ SO FAR IN DEVELOPMENT AND ONLY PLAYING AROUND ⚠️⚠️
+⚠️⚠️ STILL IN DEVELOPMENT ⚠️⚠️
 
-## Features so far
- 
-- **First-run setup:** Choose how your apps are displayed before you see anything else.
-- **Grid or list:** Pick your layout, configure columns, icon size, names. I'll be adding on more probably
-- **No bloat:** No news feed, no suggestions, no widgets.
-- **Persistent preferences:** Settings persist via DataStore.
-- **Dark by default:** `#080808` background, always. (subject to change)
+## The idea
+
+A simple free and open source minimal launcher with tailored experience in mind
+
+## 0.1 → 0.2
+
+**0.1** was me checking I could make a working launcher at all. It worked, so now I can experiment with my visions and opinions in **0.2+**
+
+**0.2** is the first real move toward what Slate is supposed to be:
+
+- **Freescreen mode option:** No grid or snapping. Drag any icon to any coordinate. Your home screen is a canvas. A blank **slate** even ;)
+- **You curate what shows up.** Instead of dumping every installed app on screen, you add the ones you want. With a toolbar on the top that you can use to either add, edit, or delete apps from the drawer.
+- **List mode still exists** for when you want ordered rows. Reorder with arrow buttons in edit mode, resize text per entry, toggle icons per entry. Might add dragging since it's for phones, so far arrows were convenient for a VM. I might add more list options, the current one is vertical, maybe a horizontal one could be cool (like the playstation list of games but for apps and you slide around)
+
+## Stack
+
+- Kotlin + Jetpack Compose (Material 3)
+- DataStore (Preferences) for persistence, with `HomeScreenApp` entries serialized as JSON
+- Min SDK 29 (Android 10)
+- No third-party deps beyond AndroidX/Compose
+
+## What's there now
+
+- First-run layout picker
+- Freescreen with drag-to-position and bounds clamping
+- List with per-entry reorder
+- Add/edit/delete toolbar with mode toggles
+- Per-app icon size (32–96dp), label toggle, list text size (12–24sp)
+- Dark by default: `#080808` background, `#FFFFFF` foreground
+- Persistent everything via DataStore
