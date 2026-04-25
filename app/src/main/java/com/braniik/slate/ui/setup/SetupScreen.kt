@@ -18,17 +18,36 @@ import com.braniik.slate.data.LauncherSettings
 private val White = Color(0xFFFFFFFF)
 private val Subtle = Color(0xFF444444)
 
+private enum class SetupStep { LAYOUT, ORIENTATION }
+
 @Composable
 fun SetupScreen(onFinish: (LauncherSettings) -> Unit) {
+    var step by remember { mutableStateOf(SetupStep.LAYOUT) }
+    var layoutMode by remember { mutableStateOf("") }
+
     Box(
         modifier = Modifier
             .fillMaxSize()
             .padding(32.dp),
         contentAlignment = Alignment.Center
     ) {
-        LayoutStep(onSelect = { mode ->
-            onFinish(LauncherSettings(layoutMode = mode))
-        })
+        when (step) {
+            SetupStep.LAYOUT -> LayoutStep(onSelect = { mode ->
+                layoutMode = mode
+                if (mode == "list") {
+                    step = SetupStep.ORIENTATION
+                } else {
+                    onFinish(LauncherSettings(layoutMode = mode))
+                }
+            })
+
+            SetupStep.ORIENTATION -> OrientationStep(onSelect = { orientation ->
+                onFinish(LauncherSettings(
+                    layoutMode = layoutMode,
+                    listOrientation = orientation
+                ))
+            })
+        }
     }
 }
 
@@ -40,26 +59,13 @@ private fun LayoutStep(onSelect: (String) -> Unit) {
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(40.dp)
     ) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            Text(
-                "slate",
-                fontSize = 36.sp,
-                fontWeight = FontWeight.Light,
-                color = White,
-                letterSpacing = 8.sp
-            )
-            Text(
-                "how do you like your apps displayed?",
-                fontSize = 14.sp,
-                color = Subtle
-            )
-        }
+        SetupHeader(
+            title = "slate",
+            subtitle = "how do you like your apps displayed?"
+        )
 
         Row(horizontalArrangement = Arrangement.spacedBy(20.dp)) {
-            LayoutCard(
+            SetupCard(
                 label = "freescreen",
                 description = "place anywhere",
                 selected = picked == "freescreen",
@@ -68,7 +74,7 @@ private fun LayoutStep(onSelect: (String) -> Unit) {
                     onSelect("freescreen")
                 }
             )
-            LayoutCard(
+            SetupCard(
                 label = "list",
                 description = "ordered rows",
                 selected = picked == "list",
@@ -82,7 +88,60 @@ private fun LayoutStep(onSelect: (String) -> Unit) {
 }
 
 @Composable
-private fun LayoutCard(
+private fun OrientationStep(onSelect: (String) -> Unit) {
+    var picked by remember { mutableStateOf<String?>(null) }
+
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(40.dp)
+    ) {
+        SetupHeader(
+            title = "list",
+            subtitle = "which direction?"
+        )
+
+        Row(horizontalArrangement = Arrangement.spacedBy(20.dp)) {
+            SetupCard(
+                label = "vertical",
+                description = "scroll up & down",
+                selected = picked == "vertical",
+                onClick = {
+                    picked = "vertical"
+                    onSelect("vertical")
+                }
+            )
+            SetupCard(
+                label = "horizontal",
+                description = "scroll left & right",
+                selected = picked == "horizontal",
+                onClick = {
+                    picked = "horizontal"
+                    onSelect("horizontal")
+                }
+            )
+        }
+    }
+}
+
+@Composable
+private fun SetupHeader(title: String, subtitle: String) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        Text(
+            title,
+            fontSize = 36.sp,
+            fontWeight = FontWeight.Light,
+            color = White,
+            letterSpacing = 8.sp
+        )
+        Text(subtitle, fontSize = 14.sp, color = Subtle)
+    }
+}
+
+@Composable
+private fun SetupCard(
     label: String,
     description: String,
     selected: Boolean,

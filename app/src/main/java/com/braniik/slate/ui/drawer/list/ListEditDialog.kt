@@ -26,6 +26,21 @@ import com.braniik.slate.ui.theme.SlateBackground
 import com.braniik.slate.ui.theme.SlateOnBackground
 import com.braniik.slate.ui.theme.SlateSubtle
 
+private val sliderColors
+    @Composable get() = SliderDefaults.colors(
+        thumbColor = SlateOnBackground,
+        activeTrackColor = SlateOnBackground,
+        inactiveTrackColor = SlateSubtle
+    )
+
+private val switchColors
+    @Composable get() = SwitchDefaults.colors(
+        checkedThumbColor = SlateOnBackground,
+        checkedTrackColor = SlateSubtle,
+        uncheckedThumbColor = SlateSubtle,
+        uncheckedTrackColor = SlateBackground
+    )
+
 @Composable
 fun ListEditDialog(
     app: HomeScreenApp,
@@ -34,12 +49,19 @@ fun ListEditDialog(
     onSave: (HomeScreenApp) -> Unit
 ) {
     var textSize by remember { mutableIntStateOf(app.listTextSizeSp) }
+    var iconSize by remember { mutableIntStateOf(app.listIconSizeDp) }
     var showIcon by remember { mutableStateOf(app.showLabel) }
 
     EditDialogShell(
         title = info.label,
         onDismiss = onDismiss,
-        onSave = { onSave(app.copy(listTextSizeSp = textSize, showLabel = showIcon)) }
+        onSave = {
+            onSave(app.copy(
+                listTextSizeSp = textSize,
+                listIconSizeDp = iconSize,
+                showLabel = showIcon
+            ))
+        }
     ) {
         OptionLabel("text size — ${textSize}sp")
         Slider(
@@ -47,15 +69,23 @@ fun ListEditDialog(
             onValueChange = { textSize = it.toInt() },
             valueRange = 12f..24f,
             steps = 11,
-            colors = SliderDefaults.colors(
-                thumbColor = SlateOnBackground,
-                activeTrackColor = SlateOnBackground,
-                inactiveTrackColor = SlateSubtle
-            ),
+            colors = sliderColors,
             modifier = Modifier.fillMaxWidth()
         )
 
-        Spacer(Modifier.height(16.dp))
+        Spacer(Modifier.height(12.dp))
+
+        OptionLabel("icon size — ${iconSize}dp")
+        Slider(
+            value = iconSize.toFloat(),
+            onValueChange = { iconSize = it.toInt() },
+            valueRange = 20f..64f,
+            steps = 10,
+            colors = sliderColors,
+            modifier = Modifier.fillMaxWidth()
+        )
+
+        Spacer(Modifier.height(12.dp))
 
         Row(
             verticalAlignment = Alignment.CenterVertically,
@@ -66,12 +96,7 @@ fun ListEditDialog(
             Switch(
                 checked = showIcon,
                 onCheckedChange = { showIcon = it },
-                colors = SwitchDefaults.colors(
-                    checkedThumbColor = SlateOnBackground,
-                    checkedTrackColor = SlateSubtle,
-                    uncheckedThumbColor = SlateSubtle,
-                    uncheckedTrackColor = SlateBackground
-                )
+                colors = switchColors
             )
         }
     }
