@@ -105,3 +105,15 @@ suspend fun Context.saveHomeScreenApps(apps: List<HomeScreenApp>) {
         prefs[PreferenceKeys.HOME_SCREEN_APPS] = apps.toJsonString()
     }
 }
+
+suspend fun Context.saveLayoutMode(mode: String) {
+    dataStore.edit { prefs ->
+        prefs[PreferenceKeys.LAYOUT_MODE] = mode
+    }
+}
+
+suspend fun Context.saveListOrientation(orientation: String) {
+    dataStore.edit { prefs ->
+        prefs[PreferenceKeys.LIST_ORIENTATION] = orientation
+    }
+}

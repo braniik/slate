@@ -21,12 +21,17 @@ import com.braniik.slate.data.HomeScreenApp
 import com.braniik.slate.data.LauncherSettings
 import com.braniik.slate.data.homeScreenAppsFlow
 import com.braniik.slate.data.saveHomeScreenApps
+import com.braniik.slate.data.saveLayoutMode
+import com.braniik.slate.data.saveListOrientation
+import com.braniik.slate.ui.drawer.common.BlanketSetDialog
 import com.braniik.slate.ui.drawer.freescreen.FreescreenEditDialog
 import com.braniik.slate.ui.drawer.freescreen.HomeFreescreen
 import com.braniik.slate.ui.drawer.list.HomeList
 import com.braniik.slate.ui.drawer.list.ListEditDialog
+import com.braniik.slate.ui.drawer.settings.SlateSettingsSheet
 import com.braniik.slate.ui.theme.SlateSubtle
 import kotlinx.coroutines.launch
+
 @Composable
 fun AppDrawerScreen(settings: LauncherSettings) {
     val context = LocalContext.current
@@ -36,21 +41,61 @@ fun AppDrawerScreen(settings: LauncherSettings) {
     val homeApps by context.homeScreenAppsFlow().collectAsState(initial = emptyList())
     var mode by remember { mutableStateOf(HomeMode.NORMAL) }
     var editingApp by remember { mutableStateOf<HomeScreenApp?>(null) }
+    var showSettings by remember { mutableStateOf(false) }
+    var showBlanketSet by remember { mutableStateOf(false) }
 
     fun save(apps: List<HomeScreenApp>) {
         scope.launch { context.saveHomeScreenApps(apps) }
+    }
+
+    fun switchMode(targetMode: String) {
+        android.util.Log.d("Slate", "switchMode called with: $targetMode")
+        scope.launch {
+            android.util.Log.d("Slate", "coroutine entered, homeApps count: ${homeApps.size}")
+            val resetApps = if (targetMode == "freescreen") {
+                homeApps.mapIndexed { i, app ->
+                    val (x, y) = nextFreescreenPos(i)
+                    app.copy(xPos = x, yPos = y)
+                }
+            } else {
+                homeApps.mapIndexed { i, app -> app.copy(order = i) }
+            }
+            android.util.Log.d("Slate", "saving ${resetApps.size} apps, then mode=$targetMode")
+            context.saveHomeScreenApps(resetApps)
+            context.saveLayoutMode(targetMode)
+            android.util.Log.d("Slate", "save complete")
+        }
+        showSettings = false
+        android.util.Log.d("Slate", "showSettings set to false")
     }
 
     Box(modifier = Modifier.fillMaxSize()) {
         Column(modifier = Modifier.fillMaxSize()) {
             Toolbar(
                 mode = mode,
+                showSettings = showSettings,
                 onModeChange = { newMode ->
+                    showSettings = false
                     mode = if (mode == newMode) HomeMode.NORMAL else newMode
-                }
+                },
+                onSettingsToggle = {
+                    showSettings = !showSettings
+                    if (showSettings) mode = HomeMode.NORMAL
+                },
+                onBlanketSet = { showBlanketSet = true }
             )
 
             when {
+                showSettings -> {
+                    SlateSettingsSheet(
+                        layoutMode = settings.layoutMode,
+                        listOrientation = settings.listOrientation,
+                        onSwitchMode = ::switchMode,
+                        onListOrientationChange = { scope.launch { context.saveListOrientation(it) } },
+                        onClose = { showSettings = false }
+                    )
+                }
+
                 homeApps.isEmpty() && mode != HomeMode.ADDING -> EmptyState()
 
                 mode == HomeMode.ADDING -> {
@@ -92,15 +137,7 @@ fun AppDrawerScreen(settings: LauncherSettings) {
                         allApps = allApps,
                         mode = mode,
                         horizontal = settings.listOrientation == "horizontal",
-                        onTap = { app -> handleAppTap(app, mode, context, homeApps, ::save) { editingApp = it } },
-                        onMoveUp = { app ->
-                            val idx = sortedApps.indexOf(app)
-                            if (idx > 0) save(swapOrder(sortedApps, idx, idx - 1))
-                        },
-                        onMoveDown = { app ->
-                            val idx = sortedApps.indexOf(app)
-                            if (idx < sortedApps.lastIndex) save(swapOrder(sortedApps, idx, idx + 1))
-                        }
+                        onTap = { app -> handleAppTap(app, mode, context, homeApps, ::save) { editingApp = it } }
                     )
                 }
             }
@@ -117,6 +154,17 @@ fun AppDrawerScreen(settings: LauncherSettings) {
             } else {
                 ListEditDialog(app, info, onDismiss = { editingApp = null }, onSave = onSave)
             }
+        }
+
+        if (showBlanketSet) {
+            BlanketSetDialog(
+                isFreescreen = settings.layoutMode == "freescreen",
+                onDismiss = { showBlanketSet = false },
+                onApply = { transform ->
+                    save(homeApps.map { it.transform() })
+                    showBlanketSet = false
+                }
+            )
         }
     }
 }
@@ -136,14 +184,7 @@ private fun handleAppTap(
         HomeMode.ADDING -> {}
     }
 }
-private fun swapOrder(apps: List<HomeScreenApp>, i: Int, j: Int): List<HomeScreenApp> {
-    val result = apps.toMutableList()
-    val a = result[i]
-    val b = result[j]
-    result[i] = a.copy(order = b.order)
-    result[j] = b.copy(order = a.order)
-    return result
-}
+
 private fun nextFreescreenPos(count: Int): Pair<Float, Float> {
     val cols = 4
     val stepX = 90f

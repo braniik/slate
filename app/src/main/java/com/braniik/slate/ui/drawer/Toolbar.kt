@@ -11,6 +11,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
@@ -26,7 +28,13 @@ import com.braniik.slate.ui.theme.SlateOnBackground
 import com.braniik.slate.ui.theme.SlateSubtle
 
 @Composable
-internal fun Toolbar(mode: HomeMode, onModeChange: (HomeMode) -> Unit) {
+internal fun Toolbar(
+    mode: HomeMode,
+    showSettings: Boolean,
+    onModeChange: (HomeMode) -> Unit,
+    onSettingsToggle: () -> Unit,
+    onBlanketSet: () -> Unit
+) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -44,11 +52,19 @@ internal fun Toolbar(mode: HomeMode, onModeChange: (HomeMode) -> Unit) {
         )
 
         Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+            ToolbarIcon(Icons.Filled.Settings, "settings", showSettings) {
+                onSettingsToggle()
+            }
             ToolbarIcon(Icons.Filled.Add, "add", mode == HomeMode.ADDING) {
                 onModeChange(HomeMode.ADDING)
             }
             ToolbarIcon(Icons.Filled.Edit, "edit", mode == HomeMode.EDITING) {
                 onModeChange(HomeMode.EDITING)
+            }
+            if (mode == HomeMode.EDITING) {
+                ToolbarIcon(Icons.Filled.Tune, "blanket set", false) {
+                    onBlanketSet()
+                }
             }
             ToolbarIcon(Icons.Filled.Delete, "remove", mode == HomeMode.DELETING) {
                 onModeChange(HomeMode.DELETING)

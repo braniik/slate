@@ -8,10 +8,18 @@ A minimal Android launcher. Clean by default, yours visually.
 
 A simple free and open source minimal launcher with tailored experience in mind
 
+## 0.3 → 0.3.1
+
+**0.3.1** adds in-app settings and bulk customization:
+
+- **Settings panel:** Gear icon in the toolbar opens a settings sheet where you can switch between freescreen and list mode. Switching resets arrangements with a confirmation warning. List orientation is also adjustable here.
+- **Blanket-set:** A Tune icon appears next to the pen in edit mode. Tap it to set icon size, text size, or show/hide labels for all apps at once.
+- **Reorder arrows removed** from list mode. A better reordering solution is planned for a future update.
+
 ## 0.2 → 0.3
- 
+
 **0.3** expands list mode customization:
- 
+
 - **Vertical or horizontal list:** Setup now asks list users which direction they want. Horizontal mode lays out icon-on-top, label-below and scrolls left/right.
 - **Per-app icon size in list mode:** The edit dialog (pen) now controls icon size (20–64dp) alongside text size. Freescreen and list icon sizes are independent.
 
@@ -30,4 +38,4 @@ A simple free and open source minimal launcher with tailored experience in mind
 - Kotlin + Jetpack Compose (Material 3)
 - DataStore (Preferences) for persistence, with `HomeScreenApp` entries serialized as JSON
 - Min SDK 29 (Android 10)
-- No third-party deps beyond AndroidX/Compose\
+- No third-party deps beyond AndroidX/Compose
