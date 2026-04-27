@@ -137,7 +137,8 @@ fun AppDrawerScreen(settings: LauncherSettings) {
                         allApps = allApps,
                         mode = mode,
                         horizontal = settings.listOrientation == "horizontal",
-                        onTap = { app -> handleAppTap(app, mode, context, homeApps, ::save) { editingApp = it } }
+                        onTap = { app -> handleAppTap(app, mode, context, homeApps, ::save) { editingApp = it } },
+                        onReorder = ::save
                     )
                 }
             }

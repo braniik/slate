@@ -8,6 +8,13 @@ A minimal Android launcher. Clean by default, yours visually.
 
 A simple free and open source minimal launcher with tailored experience in mind
 
+## 0.3.1 → 0.3.2
+
+**0.3.2** adds drag-to-reorder in list mode:
+
+- **Drag reordering:** In edit mode (pen icon), drag any app to rearrange it. Tap still opens the per-app settings dialog, drag moves it, same behavior as freescreen, constrained to one axis. Non-dragged items animate into place on swap.
+- Scroll is disabled while in edit mode so drag gestures don't fight the list. Exit edit mode to scroll normally.
+
 ## 0.3 → 0.3.1
 
 **0.3.1** adds in-app settings and bulk customization:
