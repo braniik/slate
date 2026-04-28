@@ -28,7 +28,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.graphics.drawable.toBitmap
-import com.braniik.slate.ui.theme.SlateOnBackground
+import com.braniik.slate.data.LocalWallpaperTextColor
 import com.braniik.slate.ui.theme.SlateSubtle
 
 @Composable
@@ -79,7 +79,7 @@ internal fun AddAppsOverlay(
                         Text(
                             app.label,
                             fontSize = 14.sp,
-                            color = SlateOnBackground,
+                            color = LocalWallpaperTextColor.current,
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis
                         )

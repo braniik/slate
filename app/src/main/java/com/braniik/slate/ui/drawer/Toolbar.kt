@@ -24,7 +24,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.braniik.slate.ui.theme.SlateOnBackground
+import com.braniik.slate.data.LocalWallpaperTextColor
 import com.braniik.slate.ui.theme.SlateSubtle
 
 @Composable
@@ -35,6 +35,8 @@ internal fun Toolbar(
     onSettingsToggle: () -> Unit,
     onBlanketSet: () -> Unit
 ) {
+    val textColor = LocalWallpaperTextColor.current
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -47,7 +49,7 @@ internal fun Toolbar(
             "slate",
             fontSize = 18.sp,
             fontWeight = FontWeight.Light,
-            color = SlateOnBackground,
+            color = textColor,
             letterSpacing = 4.sp
         )
 
@@ -80,8 +82,9 @@ private fun ToolbarIcon(
     active: Boolean,
     onClick: () -> Unit
 ) {
+    val activeColor = LocalWallpaperTextColor.current
     val tint by animateColorAsState(
-        if (active) SlateOnBackground else SlateSubtle,
+        if (active) activeColor else SlateSubtle,
         label = "toolbar_$label"
     )
     IconButton(onClick = onClick, modifier = Modifier.size(40.dp)) {

@@ -4,21 +4,23 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.*
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import com.braniik.slate.data.LocalWallpaperTextColor
+import com.braniik.slate.data.WallpaperConfig
 import com.braniik.slate.data.launcherSettingsFlow
 import com.braniik.slate.data.saveSettings
+import com.braniik.slate.data.textColor
+import com.braniik.slate.data.wallpaperBackground
+import com.braniik.slate.data.wallpaperConfigFlow
 import com.braniik.slate.ui.drawer.AppDrawerScreen
 import com.braniik.slate.ui.setup.SetupScreen
 import com.braniik.slate.ui.theme.SlateTheme
 import kotlinx.coroutines.launch
-
-private val Background = Color(0xFF080808)
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -26,13 +28,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             SlateTheme {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .background(Background)
-                ) {
-                    SlateApp()
-                }
+                SlateApp()
             }
         }
     }
@@ -44,19 +40,27 @@ fun SlateApp() {
     val scope = rememberCoroutineScope()
 
     val settings by context.launcherSettingsFlow().collectAsState(initial = null)
+    val wallpaper by context.wallpaperConfigFlow().collectAsState(initial = WallpaperConfig())
 
-    when {
-        settings == null -> {
-        }
-        !settings!!.setupDone -> {
-            SetupScreen { chosenSettings ->
-                scope.launch {
-                    context.saveSettings(chosenSettings)
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .wallpaperBackground(wallpaper)
+    ) {
+        CompositionLocalProvider(LocalWallpaperTextColor provides wallpaper.textColor()) {
+            when {
+                settings == null -> {}
+                !settings!!.setupDone -> {
+                    SetupScreen { chosenSettings ->
+                        scope.launch {
+                            context.saveSettings(chosenSettings)
+                        }
+                    }
+                }
+                else -> {
+                    AppDrawerScreen(settings = settings!!)
                 }
             }
-        }
-        else -> {
-            AppDrawerScreen(settings = settings!!)
         }
     }
 }

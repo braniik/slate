@@ -19,16 +19,20 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.braniik.slate.data.HomeScreenApp
 import com.braniik.slate.data.LauncherSettings
+import com.braniik.slate.data.WallpaperConfig
 import com.braniik.slate.data.homeScreenAppsFlow
 import com.braniik.slate.data.saveHomeScreenApps
 import com.braniik.slate.data.saveLayoutMode
 import com.braniik.slate.data.saveListOrientation
+import com.braniik.slate.data.saveWallpaperConfig
+import com.braniik.slate.data.wallpaperConfigFlow
 import com.braniik.slate.ui.drawer.common.BlanketSetDialog
 import com.braniik.slate.ui.drawer.freescreen.FreescreenEditDialog
 import com.braniik.slate.ui.drawer.freescreen.HomeFreescreen
 import com.braniik.slate.ui.drawer.list.HomeList
 import com.braniik.slate.ui.drawer.list.ListEditDialog
 import com.braniik.slate.ui.drawer.settings.SlateSettingsSheet
+import com.braniik.slate.ui.drawer.settings.WallpaperPicker
 import com.braniik.slate.ui.theme.SlateSubtle
 import kotlinx.coroutines.launch
 
@@ -39,10 +43,12 @@ fun AppDrawerScreen(settings: LauncherSettings) {
     val allApps = remember { loadApps(context) }
 
     val homeApps by context.homeScreenAppsFlow().collectAsState(initial = emptyList())
+    val wallpaperConfig by context.wallpaperConfigFlow().collectAsState(initial = WallpaperConfig())
     var mode by remember { mutableStateOf(HomeMode.NORMAL) }
     var editingApp by remember { mutableStateOf<HomeScreenApp?>(null) }
     var showSettings by remember { mutableStateOf(false) }
     var showBlanketSet by remember { mutableStateOf(false) }
+    var showWallpaperPicker by remember { mutableStateOf(false) }
 
     fun save(apps: List<HomeScreenApp>) {
         scope.launch { context.saveHomeScreenApps(apps) }
@@ -90,8 +96,10 @@ fun AppDrawerScreen(settings: LauncherSettings) {
                     SlateSettingsSheet(
                         layoutMode = settings.layoutMode,
                         listOrientation = settings.listOrientation,
+                        wallpaperConfig = wallpaperConfig,
                         onSwitchMode = ::switchMode,
                         onListOrientationChange = { scope.launch { context.saveListOrientation(it) } },
+                        onOpenWallpaperPicker = { showWallpaperPicker = true },
                         onClose = { showSettings = false }
                     )
                 }
@@ -165,6 +173,17 @@ fun AppDrawerScreen(settings: LauncherSettings) {
                     save(homeApps.map { it.transform() })
                     showBlanketSet = false
                 }
+            )
+        }
+
+        if (showWallpaperPicker) {
+            WallpaperPicker(
+                current = wallpaperConfig,
+                onSave = { config ->
+                    scope.launch { context.saveWallpaperConfig(config) }
+                    showWallpaperPicker = false
+                },
+                onDismiss = { showWallpaperPicker = false }
             )
         }
     }

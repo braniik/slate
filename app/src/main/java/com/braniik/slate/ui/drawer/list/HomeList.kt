@@ -43,10 +43,10 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import androidx.core.graphics.drawable.toBitmap
 import com.braniik.slate.data.HomeScreenApp
+import com.braniik.slate.data.LocalWallpaperTextColor
 import com.braniik.slate.ui.drawer.AppInfo
 import com.braniik.slate.ui.drawer.HomeMode
 import com.braniik.slate.ui.theme.SlateDanger
-import com.braniik.slate.ui.theme.SlateOnBackground
 
 @Composable
 fun HomeList(
@@ -226,7 +226,7 @@ private fun VerticalListItem(
         Text(
             text = info.label,
             fontSize = homeApp.listTextSizeSp.sp,
-            color = SlateOnBackground,
+            color = LocalWallpaperTextColor.current,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
             modifier = Modifier.weight(1f)
@@ -293,7 +293,7 @@ private fun HorizontalListItem(
         Text(
             text = info.label,
             fontSize = homeApp.listTextSizeSp.sp,
-            color = SlateOnBackground,
+            color = LocalWallpaperTextColor.current,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
             textAlign = TextAlign.Center

@@ -30,10 +30,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.graphics.drawable.toBitmap
 import com.braniik.slate.data.HomeScreenApp
+import com.braniik.slate.data.LocalWallpaperTextColor
 import com.braniik.slate.ui.drawer.AppInfo
 import com.braniik.slate.ui.drawer.HomeMode
 import com.braniik.slate.ui.theme.SlateDanger
-import com.braniik.slate.ui.theme.SlateOnBackground
 
 @Composable
 internal fun FreescreenIcon(
@@ -104,7 +104,7 @@ internal fun FreescreenIcon(
             Text(
                 text = info.label,
                 fontSize = 10.sp,
-                color = SlateOnBackground,
+                color = LocalWallpaperTextColor.current,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )

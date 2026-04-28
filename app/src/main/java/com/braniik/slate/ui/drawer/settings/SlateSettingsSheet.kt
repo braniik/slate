@@ -1,6 +1,7 @@
 package com.braniik.slate.ui.drawer.settings
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
@@ -29,9 +30,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.braniik.slate.data.WallpaperConfig
 import com.braniik.slate.ui.theme.SlateDanger
 import com.braniik.slate.ui.theme.SlateOnBackground
 import com.braniik.slate.ui.theme.SlateScrim
@@ -42,8 +47,10 @@ import com.braniik.slate.ui.theme.SlateSurface
 fun SlateSettingsSheet(
     layoutMode: String,
     listOrientation: String,
+    wallpaperConfig: WallpaperConfig,
     onSwitchMode: (String) -> Unit,
     onListOrientationChange: (String) -> Unit,
+    onOpenWallpaperPicker: () -> Unit,
     onClose: () -> Unit
 ) {
     var confirmSwitch by remember { mutableStateOf(false) }
@@ -107,6 +114,30 @@ fun SlateSettingsSheet(
                     OrientationOption("horizontal", "scroll left & right", listOrientation == "horizontal") {
                         onListOrientationChange("horizontal")
                     }
+                }
+
+                Spacer(Modifier.height(24.dp))
+                SectionLabel("wallpaper")
+
+                WallpaperPreviewRow(wallpaperConfig)
+
+                Spacer(Modifier.height(8.dp))
+
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(SlateSubtle.copy(alpha = 0.3f))
+                        .clickable { onOpenWallpaperPicker() }
+                        .padding(vertical = 14.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        "customize",
+                        fontSize = 13.sp,
+                        color = SlateOnBackground,
+                        letterSpacing = 1.sp
+                    )
                 }
             }
         }
@@ -230,4 +261,23 @@ private fun OrientationOption(
             Text(description, fontSize = 11.sp, color = SlateSubtle)
         }
     }
+}
+
+@Composable
+private fun WallpaperPreviewRow(config: WallpaperConfig) {
+    val brush = when (config.mode) {
+        "gradient" -> Brush.horizontalGradient(
+            listOf(Color(config.gradientStart), Color(config.gradientEnd))
+        )
+        else -> SolidColor(Color(config.solidColor))
+    }
+
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(48.dp)
+            .clip(RoundedCornerShape(8.dp))
+            .background(brush)
+            .border(1.dp, SlateSubtle, RoundedCornerShape(8.dp))
+    )
 }

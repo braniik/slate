@@ -19,6 +19,7 @@ object PreferenceKeys {
     val LAYOUT_MODE = stringPreferencesKey("layout_mode")
     val LIST_ORIENTATION = stringPreferencesKey("list_orientation")
     val HOME_SCREEN_APPS = stringPreferencesKey("home_screen_apps")
+    val WALLPAPER = stringPreferencesKey("wallpaper_config")
 }
 
 data class LauncherSettings(
@@ -115,5 +116,16 @@ suspend fun Context.saveLayoutMode(mode: String) {
 suspend fun Context.saveListOrientation(orientation: String) {
     dataStore.edit { prefs ->
         prefs[PreferenceKeys.LIST_ORIENTATION] = orientation
+    }
+}
+
+fun Context.wallpaperConfigFlow(): Flow<WallpaperConfig> =
+    dataStore.data.map { prefs ->
+        WallpaperConfig.fromJson(prefs[PreferenceKeys.WALLPAPER] ?: "")
+    }
+
+suspend fun Context.saveWallpaperConfig(config: WallpaperConfig) {
+    dataStore.edit { prefs ->
+        prefs[PreferenceKeys.WALLPAPER] = config.toJson()
     }
 }

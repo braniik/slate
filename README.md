@@ -8,6 +8,15 @@ A minimal Android launcher. Clean by default, yours visually.
 
 A simple free and open source minimal launcher with tailored experience in mind
 
+## 0.3.2 → 0.4.0
+
+**0.4.0** adds wallpaper support, the first visual customization beyond layout:
+
+- **Solid color wallpapers:** Pick any color via hex input or RGB sliders. Defaults to the original black `#080808`.
+- **Gradient wallpapers:** Toggle to gradient mode and configure two color stops independently. Choose from 8 directions via an arrow grid: cardinal and diagonal.
+- **Auto-contrast text:** App labels, the toolbar title, and toolbar icons adapt between white and dark automatically based on the luminance of the wallpaper behind them.
+- Wallpaper config is persisted in DataStore alongside the rest of launcher preferences. Existing installs default to solid `#080808`.
+
 ## 0.3.1 → 0.3.2
 
 **0.3.2** adds drag-to-reorder in list mode:
