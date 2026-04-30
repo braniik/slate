@@ -7,6 +7,9 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.unit.IntSize
 import org.json.JSONObject
 
 private val LightText = Color(0xFFFFFFFF)
@@ -19,7 +22,9 @@ data class WallpaperConfig(
     val solidColor: Int = 0xFF080808.toInt(),
     val gradientStart: Int = 0xFF080808.toInt(),
     val gradientEnd: Int = 0xFF333333.toInt(),
-    val gradientDirection: String = "top_to_bottom"
+    val gradientDirection: String = "top_to_bottom",
+    val imagePath: String = "",
+    val imageDominantColor: Int = 0xFF333333.toInt()
 ) {
     fun toJson(): String = JSONObject().apply {
         put("mode", mode)
@@ -27,6 +32,8 @@ data class WallpaperConfig(
         put("gradientStart", gradientStart)
         put("gradientEnd", gradientEnd)
         put("gradientDirection", gradientDirection)
+        put("imagePath", imagePath)
+        put("imageDominantColor", imageDominantColor)
     }.toString()
 
     companion object {
@@ -37,7 +44,9 @@ data class WallpaperConfig(
                 solidColor = o.optInt("solidColor", 0xFF080808.toInt()),
                 gradientStart = o.optInt("gradientStart", 0xFF080808.toInt()),
                 gradientEnd = o.optInt("gradientEnd", 0xFF333333.toInt()),
-                gradientDirection = o.optString("gradientDirection", "top_to_bottom")
+                gradientDirection = o.optString("gradientDirection", "top_to_bottom"),
+                imagePath = o.optString("imagePath", ""),
+                imageDominantColor = o.optInt("imageDominantColor", 0xFF333333.toInt())
             )
         } catch (_: Exception) {
             WallpaperConfig()
@@ -45,8 +54,29 @@ data class WallpaperConfig(
     }
 }
 
-fun Modifier.wallpaperBackground(config: WallpaperConfig): Modifier = drawBehind {
+fun Modifier.wallpaperBackground(
+    config: WallpaperConfig,
+    imageBitmap: ImageBitmap? = null
+): Modifier = drawBehind {
     when (config.mode) {
+        "image" -> {
+            imageBitmap?.let { bmp ->
+                val scale = maxOf(
+                    size.width / bmp.width.toFloat(),
+                    size.height / bmp.height.toFloat()
+                )
+                val srcW = (size.width / scale).toInt()
+                val srcH = (size.height / scale).toInt()
+                val srcX = (bmp.width - srcW) / 2
+                val srcY = (bmp.height - srcH) / 2
+                drawImage(
+                    image = bmp,
+                    srcOffset = IntOffset(srcX, srcY),
+                    srcSize = IntSize(srcW, srcH),
+                    dstSize = IntSize(size.width.toInt(), size.height.toInt())
+                )
+            } ?: drawRect(color = Color(config.solidColor))
+        }
         "gradient" -> {
             val colors = listOf(Color(config.gradientStart), Color(config.gradientEnd))
             val (start, end) = directionOffsets(config.gradientDirection, size)
@@ -58,6 +88,7 @@ fun Modifier.wallpaperBackground(config: WallpaperConfig): Modifier = drawBehind
 
 fun WallpaperConfig.textColor(): Color {
     val representative = when (mode) {
+        "image" -> Color(imageDominantColor)
         "gradient" -> {
             val a = Color(gradientStart)
             val b = Color(gradientEnd)

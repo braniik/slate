@@ -7,12 +7,12 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.*
-import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import com.braniik.slate.data.LocalWallpaperTextColor
 import com.braniik.slate.data.WallpaperConfig
 import com.braniik.slate.data.launcherSettingsFlow
+import com.braniik.slate.data.loadWallpaperBitmap
 import com.braniik.slate.data.saveSettings
 import com.braniik.slate.data.textColor
 import com.braniik.slate.data.wallpaperBackground
@@ -42,10 +42,16 @@ fun SlateApp() {
     val settings by context.launcherSettingsFlow().collectAsState(initial = null)
     val wallpaper by context.wallpaperConfigFlow().collectAsState(initial = WallpaperConfig())
 
+    val imageBitmap = remember(wallpaper.mode, wallpaper.imagePath) {
+        if (wallpaper.mode == "image" && wallpaper.imagePath.isNotBlank())
+            loadWallpaperBitmap(wallpaper.imagePath)
+        else null
+    }
+
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .wallpaperBackground(wallpaper)
+            .wallpaperBackground(wallpaper, imageBitmap)
     ) {
         CompositionLocalProvider(LocalWallpaperTextColor provides wallpaper.textColor()) {
             when {

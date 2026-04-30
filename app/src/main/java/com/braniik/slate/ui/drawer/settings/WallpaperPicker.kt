@@ -1,5 +1,8 @@
 package com.braniik.slate.ui.drawer.settings
 
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -29,25 +32,34 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.braniik.slate.data.WallpaperConfig
+import com.braniik.slate.data.extractWallpaperColors
+import com.braniik.slate.data.loadWallpaperBitmap
+import com.braniik.slate.data.saveWallpaperImage
 import com.braniik.slate.ui.theme.SlateBackground
 import com.braniik.slate.ui.theme.SlateOnBackground
 import com.braniik.slate.ui.theme.SlateScrim
 import com.braniik.slate.ui.theme.SlateSubtle
 import com.braniik.slate.ui.theme.SlateSurface
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 private data class DirectionOption(val key: String, val symbol: String)
 
@@ -57,19 +69,15 @@ private val directionGrid = listOf(
     DirectionOption("bottom_left_to_top_right", "↗"), DirectionOption("bottom_to_top", "↑"), DirectionOption("bottom_right_to_top_left", "↖")
 )
 
-private val sliderColors
-    @Composable get() = SliderDefaults.colors(
-        thumbColor = SlateOnBackground,
-        activeTrackColor = SlateOnBackground,
-        inactiveTrackColor = SlateSubtle
-    )
-
 @Composable
 fun WallpaperPicker(
     current: WallpaperConfig,
     onSave: (WallpaperConfig) -> Unit,
     onDismiss: () -> Unit
 ) {
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+
     var mode by remember { mutableStateOf(current.mode) }
     var solidColor by remember { mutableIntStateOf(current.solidColor) }
     var gradientStart by remember { mutableIntStateOf(current.gradientStart) }
@@ -77,17 +85,43 @@ fun WallpaperPicker(
     var gradientDirection by remember { mutableStateOf(current.gradientDirection) }
     var editingSlot by remember { mutableStateOf("start") }
 
+    var imagePath by remember { mutableStateOf(current.imagePath) }
+    var imageDominantColor by remember { mutableIntStateOf(current.imageDominantColor) }
+    var previewBitmap by remember {
+        mutableStateOf(
+            if (current.mode == "image" && current.imagePath.isNotBlank())
+                loadWallpaperBitmap(current.imagePath)
+            else null
+        )
+    }
+
+    val imagePicker = rememberLauncherForActivityResult(
+        ActivityResultContracts.GetContent()
+    ) { uri ->
+        uri?.let {
+            scope.launch(Dispatchers.IO) {
+                val path = saveWallpaperImage(context, it) ?: return@launch
+                val colors = extractWallpaperColors(path)
+                val bmp = loadWallpaperBitmap(path)
+                imagePath = path
+                imageDominantColor = colors.dominant
+                previewBitmap = bmp
+            }
+        }
+    }
+
     val activeColor = when {
         mode == "solid" -> solidColor
-        editingSlot == "start" -> gradientStart
-        else -> gradientEnd
+        mode == "gradient" && editingSlot == "start" -> gradientStart
+        mode == "gradient" -> gradientEnd
+        else -> 0
     }
 
     fun setActiveColor(argb: Int) {
         when {
             mode == "solid" -> solidColor = argb
-            editingSlot == "start" -> gradientStart = argb
-            else -> gradientEnd = argb
+            mode == "gradient" && editingSlot == "start" -> gradientStart = argb
+            mode == "gradient" -> gradientEnd = argb
         }
     }
 
@@ -120,7 +154,14 @@ fun WallpaperPicker(
 
             Spacer(Modifier.height(4.dp))
 
-            WallpaperPreview(mode, solidColor, gradientStart, gradientEnd, gradientDirection)
+            WallpaperPreview(
+                mode = mode,
+                solidColor = solidColor,
+                gradientStart = gradientStart,
+                gradientEnd = gradientEnd,
+                gradientDirection = gradientDirection,
+                imageBitmap = previewBitmap
+            )
 
             Spacer(Modifier.height(8.dp))
 
@@ -128,6 +169,7 @@ fun WallpaperPicker(
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 ModeChip("solid", mode == "solid") { mode = "solid" }
                 ModeChip("gradient", mode == "gradient") { mode = "gradient" }
+                ModeChip("image", mode == "image") { mode = "image" }
             }
 
             if (mode == "gradient") {
@@ -147,14 +189,37 @@ fun WallpaperPicker(
                 DirectionGrid(gradientDirection) { gradientDirection = it }
             }
 
-            Spacer(Modifier.height(8.dp))
+            if (mode == "image") {
+                Spacer(Modifier.height(8.dp))
 
-            SectionLabel("hex")
-            HexInput(activeColor) { setActiveColor(it) }
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(SlateSubtle.copy(alpha = 0.3f))
+                        .clickable { imagePicker.launch("image/*") }
+                        .padding(vertical = 14.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        if (imagePath.isBlank()) "pick image" else "change image",
+                        fontSize = 13.sp,
+                        color = SlateOnBackground,
+                        letterSpacing = 1.sp
+                    )
+                }
+            }
 
-            Spacer(Modifier.height(8.dp))
-            SectionLabel("rgb")
-            RgbSliders(activeColor) { setActiveColor(it) }
+            if (mode != "image") {
+                Spacer(Modifier.height(8.dp))
+
+                SectionLabel("hex")
+                HexInput(activeColor) { setActiveColor(it) }
+
+                Spacer(Modifier.height(8.dp))
+                SectionLabel("rgb")
+                RgbSliders(activeColor) { setActiveColor(it) }
+            }
 
             Spacer(Modifier.height(12.dp))
 
@@ -170,7 +235,9 @@ fun WallpaperPicker(
                                 solidColor = solidColor,
                                 gradientStart = gradientStart,
                                 gradientEnd = gradientEnd,
-                                gradientDirection = gradientDirection
+                                gradientDirection = gradientDirection,
+                                imagePath = imagePath,
+                                imageDominantColor = imageDominantColor
                             )
                         )
                     }
@@ -189,31 +256,60 @@ private fun WallpaperPreview(
     solidColor: Int,
     gradientStart: Int,
     gradientEnd: Int,
-    gradientDirection: String
+    gradientDirection: String,
+    imageBitmap: ImageBitmap?
 ) {
-    val brush = when (mode) {
-        "gradient" -> when (gradientDirection) {
-            "top_to_bottom", "top_left_to_bottom_right", "top_right_to_bottom_left" ->
-                Brush.verticalGradient(listOf(Color(gradientStart), Color(gradientEnd)))
-            "bottom_to_top", "bottom_left_to_top_right", "bottom_right_to_top_left" ->
-                Brush.verticalGradient(listOf(Color(gradientEnd), Color(gradientStart)))
-            "left_to_right" ->
-                Brush.horizontalGradient(listOf(Color(gradientStart), Color(gradientEnd)))
-            "right_to_left" ->
-                Brush.horizontalGradient(listOf(Color(gradientEnd), Color(gradientStart)))
-            else -> Brush.verticalGradient(listOf(Color(gradientStart), Color(gradientEnd)))
+    when {
+        mode == "image" && imageBitmap != null -> {
+            Image(
+                bitmap = imageBitmap,
+                contentDescription = "wallpaper preview",
+                contentScale = ContentScale.Crop,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(64.dp)
+                    .clip(RoundedCornerShape(8.dp))
+            )
         }
-        else -> SolidColor(Color(solidColor))
-    }
+        mode == "image" -> {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(64.dp)
+                    .clip(RoundedCornerShape(8.dp))
+                    .background(SlateBackground)
+                    .border(1.dp, SlateSubtle, RoundedCornerShape(8.dp)),
+                contentAlignment = Alignment.Center
+            ) {
+                Text("no image selected", fontSize = 11.sp, color = SlateSubtle)
+            }
+        }
+        else -> {
+            val brush = when (mode) {
+                "gradient" -> when (gradientDirection) {
+                    "top_to_bottom", "top_left_to_bottom_right", "top_right_to_bottom_left" ->
+                        Brush.verticalGradient(listOf(Color(gradientStart), Color(gradientEnd)))
+                    "bottom_to_top", "bottom_left_to_top_right", "bottom_right_to_top_left" ->
+                        Brush.verticalGradient(listOf(Color(gradientEnd), Color(gradientStart)))
+                    "left_to_right" ->
+                        Brush.horizontalGradient(listOf(Color(gradientStart), Color(gradientEnd)))
+                    "right_to_left" ->
+                        Brush.horizontalGradient(listOf(Color(gradientEnd), Color(gradientStart)))
+                    else -> Brush.verticalGradient(listOf(Color(gradientStart), Color(gradientEnd)))
+                }
+                else -> SolidColor(Color(solidColor))
+            }
 
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(64.dp)
-            .clip(RoundedCornerShape(8.dp))
-            .background(brush)
-            .border(1.dp, SlateSubtle, RoundedCornerShape(8.dp))
-    )
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(64.dp)
+                    .clip(RoundedCornerShape(8.dp))
+                    .background(brush)
+                    .border(1.dp, SlateSubtle, RoundedCornerShape(8.dp))
+            )
+        }
+    }
 }
 
 @Composable

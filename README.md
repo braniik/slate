@@ -8,6 +8,15 @@ A minimal Android launcher. Clean by default, yours visually.
 
 A simple free and open source minimal launcher with tailored experience in mind
 
+## 0.4.0 → 0.4.1
+
+**0.4.1** adds image wallpapers:
+
+- **Image wallpapers:** Pick any image from your device via the system file picker. The image is copied to internal storage as WebP (scaled down if oversized) so it loads fast and doesn't depend on the original file sticking around.
+- **Palette color extraction:** On pick, `androidx.palette` analyzes the image and extracts a dominant color used for auto-contrast text, same as solid/gradient. Stored in the config.
+- **Wallpaper picker:** Mode row now shows `solid | gradient | image`. Image mode shows a thumbnail preview and a pick/change button.
+- Backward compatible — existing configs load fine with image fields defaulting to empty.
+
 ## 0.3.2 → 0.4.0
 
 **0.4.0** adds wallpaper support, the first visual customization beyond layout:

@@ -1,5 +1,6 @@
 package com.braniik.slate.ui.drawer.settings
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -33,10 +34,12 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.braniik.slate.data.WallpaperConfig
+import com.braniik.slate.data.loadWallpaperBitmap
 import com.braniik.slate.ui.theme.SlateDanger
 import com.braniik.slate.ui.theme.SlateOnBackground
 import com.braniik.slate.ui.theme.SlateScrim
@@ -265,6 +268,22 @@ private fun OrientationOption(
 
 @Composable
 private fun WallpaperPreviewRow(config: WallpaperConfig) {
+    if (config.mode == "image" && config.imagePath.isNotBlank()) {
+        val bitmap = remember(config.imagePath) { loadWallpaperBitmap(config.imagePath) }
+        if (bitmap != null) {
+            Image(
+                bitmap = bitmap,
+                contentDescription = "wallpaper",
+                contentScale = ContentScale.Crop,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(48.dp)
+                    .clip(RoundedCornerShape(8.dp))
+            )
+            return
+        }
+    }
+
     val brush = when (config.mode) {
         "gradient" -> Brush.horizontalGradient(
             listOf(Color(config.gradientStart), Color(config.gradientEnd))
