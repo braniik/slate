@@ -1,66 +1,117 @@
 # Slate
 
-A minimal Android launcher. Clean by default, yours visually.
+A FOSS minimal Android launcher. Clean by default, yours visually.
 
-⚠️⚠️ STILL IN DEVELOPMENT ⚠️⚠️
+⚠️ IN DEVELOPMENT ⚠️
 
 ## The idea
 
-A simple free and open source minimal launcher with tailored experience in mind
+Most launchers are too bloated and basically the same thing over and over, so I decided I'll try my take on a launcher :D. Slate does the opposite, you start with nothing and add what you want, where you want it. There will be no widget or news feeds, and definetly not AI. **You just launch apps.**
 
-## 0.4.0 → 0.4.1
+Freescreen mode is the centerpiece: your home screen is a blank **slate** where icons go anywhere at any coordinate. Guide lines let you impose structure when you want it without forcing a grid. List mode exists for people who prefer ordered rows. Both are fully customizable per-app.
 
-**0.4.1** adds image wallpapers:
+## Screenshots
 
-- **Image wallpapers:** Pick any image from your device via the system file picker. The image is copied to internal storage as WebP (scaled down if oversized) so it loads fast and doesn't depend on the original file sticking around.
-- **Palette color extraction:** On pick, `androidx.palette` analyzes the image and extracts a dominant color used for auto-contrast text, same as solid/gradient. Stored in the config.
-- **Wallpaper picker:** Mode row now shows `solid | gradient | image`. Image mode shows a thumbnail preview and a pick/change button.
-- Backward compatible — existing configs load fine with image fields defaulting to empty.
+Coming soon.
 
-## 0.3.2 → 0.4.0
+## Features
 
-**0.4.0** adds wallpaper support, the first visual customization beyond layout:
+- **Freescreen mode:** Drag icons to any position on screen.
+- **List mode:** Vertical or horizontal scrolling list. Drag-to-reorder in edit mode.
+- **Guide lines:** In edit mode, swipe from screen edges to create guide lines. Icons snap to guides and slide along them.
+- **Wallpapers:** Solid color, gradient (8 directions), or image. Auto-contrast text adapts to whatever you set.
+- **Per-app customization:** Icon size, label visibility, text size (list mode), all configurable per individual app.
+- **Blanket-set:** Apply icon size or label settings to every app at once.
+- **You choose what shows up.** Tap + to add apps, tap the trash to remove. Nothing appears unless you put it there.
 
-- **Solid color wallpapers:** Pick any color via hex input or RGB sliders. Defaults to the original black `#080808`.
-- **Gradient wallpapers:** Toggle to gradient mode and configure two color stops independently. Choose from 8 directions via an arrow grid: cardinal and diagonal.
-- **Auto-contrast text:** App labels, the toolbar title, and toolbar icons adapt between white and dark automatically based on the luminance of the wallpaper behind them.
-- Wallpaper config is persisted in DataStore alongside the rest of launcher preferences. Existing installs default to solid `#080808`.
+## Toolbar modes
 
-## 0.3.1 → 0.3.2
+| Icon | Mode | What it does |
+|------|------|-------------|
+| Plus | Adding | Browse installed apps and add them to your home screen |
+| Pen | Editing | Tap an app to customize it, drag to reposition (freescreen) or reorder (list). Create and manage guide lines in freescreen |
+| Bin | Deleting | Tap an app to remove it from the home screen |
+| Cog | Settings | Switch layout mode, change list orientation, customize wallpaper |
+| Tune | Blanket-set | Appears in edit mode. Set icon size/labels for all apps at once |
 
-**0.3.2** adds drag-to-reorder in list mode:
+## Installation
 
-- **Drag reordering:** In edit mode (pen icon), drag any app to rearrange it. Tap still opens the per-app settings dialog, drag moves it, same behavior as freescreen, constrained to one axis. Non-dragged items animate into place on swap.
-- Scroll is disabled while in edit mode so drag gestures don't fight the list. Exit edit mode to scroll normally.
+Slate is not on F-Droid yet. For now, build from source.
 
-## 0.3 → 0.3.1
+### Build from source
 
-**0.3.1** adds in-app settings and bulk customization:
+1. Clone the repo
+```bash
+git clone https://github.com/braniik/slate.git
+```
 
-- **Settings panel:** Gear icon in the toolbar opens a settings sheet where you can switch between freescreen and list mode. Switching resets arrangements with a confirmation warning. List orientation is also adjustable here.
-- **Blanket-set:** A Tune icon appears next to the pen in edit mode. Tap it to set icon size, text size, or show/hide labels for all apps at once.
-- **Reorder arrows removed** from list mode. A better reordering solution is planned for a future update.
+2. Open in Android Studio
 
-## 0.2 → 0.3
-
-**0.3** expands list mode customization:
-
-- **Vertical or horizontal list:** Setup now asks list users which direction they want. Horizontal mode lays out icon-on-top, label-below and scrolls left/right.
-- **Per-app icon size in list mode:** The edit dialog (pen) now controls icon size (20–64dp) alongside text size. Freescreen and list icon sizes are independent.
-
-## 0.1 → 0.2
-
-**0.1** was me checking I could make a working launcher at all. It worked, so now I can experiment with my visions and opinions in **0.2+**
-
-**0.2** is the first real move toward what Slate is supposed to be:
-
-- **Freescreen mode option:** No grid or snapping. Drag any icon to any coordinate. Your home screen is a canvas. A blank **slate** even ;)
-- **You curate what shows up.** Instead of dumping every installed app on screen, you add the ones you want. With a toolbar on the top that you can use to either add, edit, or delete apps from the drawer.
-- **List mode still exists** for when you want ordered rows. Reorder with arrow buttons in edit mode, resize text per entry, toggle icons per entry. Might add dragging since it's for phones, so far arrows were convenient for a VM.
+3. Build and run on your device or emulator (min SDK 29 / Android 10)
 
 ## Stack
 
 - Kotlin + Jetpack Compose (Material 3)
-- DataStore (Preferences) for persistence, with `HomeScreenApp` entries serialized as JSON
-- Min SDK 29 (Android 10)
+- DataStore (Preferences) for all persistence, models serialized as JSON
+- `androidx.palette` for wallpaper color extraction
+- Min SDK 29 (Android 10), target SDK 36
 - No third-party deps beyond AndroidX/Compose
+
+## Project structure
+
+```
+├── MainActivity.kt                — activity, edge-to-edge, wallpaper background
+├── data/
+│   ├── GuideLine.kt               — guide line model, JSON serialization, DataStore persistence
+│   ├── LauncherPreferences.kt     — DataStore keys, HomeScreenApp model, settings flows
+│   ├── WallpaperConfig.kt         — wallpaper mode/colors/gradient, auto-contrast text color
+│   └── WallpaperImageStore.kt     — image save/load/compress, palette extraction
+└── ui/
+    ├── drawer/
+    │   ├── AddAppsOverlay.kt       — scrollable picker for adding apps to home
+    │   ├── AppDrawerScreen.kt      — main state hub, wires all modes and dialogs together
+    │   ├── AppLoader.kt            — queries PackageManager for installed launcher apps
+    │   ├── HomeMode.kt             — NORMAL, ADDING, EDITING, DELETING enum
+    │   ├── Toolbar.kt              — top bar with mode toggle buttons
+    │   ├── common/
+    │   │   ├── BlanketSetDialog.kt — bulk-set icon size/labels for all apps
+    │   │   └── EditDialogShell.kt  — reusable dialog frame with save/close
+    │   ├── freescreen/
+    │   │   ├── FreeScreenIcon.kt       — draggable icon with per-axis guide line snapping
+    │   │   ├── FreescreenEditDialog.kt — per-icon size and label toggle
+    │   │   ├── GuideLineLayer.kt       — renders, creates, drags, and deletes guide lines
+    │   │   └── HomeFreescreen.kt       — freescreen canvas, layers guides behind icons
+    │   ├── list/
+    │   │   ├── HomeList.kt         — vertical/horizontal list with drag-to-reorder
+    │   │   └── ListEditDialog.kt   — per-item text size, icon size, icon toggle
+    │   └── settings/
+    │       ├── SlateSettingsSheet.kt — layout mode switch, list orientation, wallpaper access
+    │       └── WallpaperPicker.kt    — solid/gradient/image wallpaper configuration
+    ├── setup/
+    │   └── SetupScreen.kt          — first-launch layout picker
+    └── theme/
+        ├── Color.kt                — color palette (#080808 base)
+        ├── Theme.kt                — Material 3 dark theme
+        └── Type.kt                 — typography
+```
+
+## Roadmap
+
+- [x] 0.1 — Proof of concept, basic launcher
+- [x] 0.2 — Freescreen mode, curated app list, toolbar
+- [x] 0.3 — List mode customization, horizontal/vertical, per-app icon size
+- [x] 0.3.1 — In-app settings, blanket-set
+- [x] 0.3.2 — Drag-to-reorder in list mode
+- [x] 0.4 — Wallpapers (solid, gradient, auto-contrast)
+- [x] 0.4.1 — Image wallpapers, palette extraction
+- [x] 0.5 — Guide lines for freescreen
+- [ ] 0.5.1 — Toolbar snapping (top, bottom, left, right)
+- [ ] 0.6 — Icon shapes, icon customization, icon pack support
+- [ ] 0.6.1 — Icon rotation
+- [ ] 0.6.2 — App folders
+- [ ] 0.7 — Polish pass
+- [ ] 1.0 — F-Droid release (and other stores, if Android stays open)
+
+## Contributing
+
+Slate is a personal project but contributions are welcome. If you find a bug, have a feature idea, or want to help get it on F-Droid, open an issue or PR.

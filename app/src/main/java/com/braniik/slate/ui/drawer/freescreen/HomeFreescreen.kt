@@ -10,6 +10,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.unit.IntSize
+import com.braniik.slate.data.GuideLine
 import com.braniik.slate.data.HomeScreenApp
 import com.braniik.slate.ui.drawer.AppInfo
 import com.braniik.slate.ui.drawer.HomeMode
@@ -19,8 +20,10 @@ fun HomeFreescreen(
     homeApps: List<HomeScreenApp>,
     allApps: List<AppInfo>,
     mode: HomeMode,
+    guideLines: List<GuideLine>,
     onTap: (HomeScreenApp) -> Unit,
-    onPositionChanged: (HomeScreenApp, Float, Float) -> Unit
+    onPositionChanged: (HomeScreenApp, Float, Float) -> Unit,
+    onGuidesChanged: (List<GuideLine>) -> Unit
 ) {
     var containerSize by remember { mutableStateOf(IntSize.Zero) }
 
@@ -29,6 +32,14 @@ fun HomeFreescreen(
             .fillMaxSize()
             .onSizeChanged { containerSize = it }
     ) {
+        if (mode == HomeMode.EDITING) {
+            GuideLineLayer(
+                guideLines = guideLines,
+                containerSize = containerSize,
+                onGuidesChanged = onGuidesChanged
+            )
+        }
+
         homeApps.forEach { homeApp ->
             val info = allApps.find { it.packageName == homeApp.packageName } ?: return@forEach
             FreescreenIcon(
@@ -36,6 +47,7 @@ fun HomeFreescreen(
                 info = info,
                 containerSize = containerSize,
                 mode = mode,
+                guideLines = guideLines,
                 onTap = { onTap(homeApp) },
                 onPositionChanged = { x, y -> onPositionChanged(homeApp, x, y) }
             )

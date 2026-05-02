@@ -20,7 +20,9 @@ import androidx.compose.ui.unit.sp
 import com.braniik.slate.data.HomeScreenApp
 import com.braniik.slate.data.LauncherSettings
 import com.braniik.slate.data.WallpaperConfig
+import com.braniik.slate.data.guideLinesFlow
 import com.braniik.slate.data.homeScreenAppsFlow
+import com.braniik.slate.data.saveGuideLines
 import com.braniik.slate.data.saveHomeScreenApps
 import com.braniik.slate.data.saveLayoutMode
 import com.braniik.slate.data.saveListOrientation
@@ -44,6 +46,7 @@ fun AppDrawerScreen(settings: LauncherSettings) {
 
     val homeApps by context.homeScreenAppsFlow().collectAsState(initial = emptyList())
     val wallpaperConfig by context.wallpaperConfigFlow().collectAsState(initial = WallpaperConfig())
+    val guideLines by context.guideLinesFlow().collectAsState(initial = emptyList())
     var mode by remember { mutableStateOf(HomeMode.NORMAL) }
     var editingApp by remember { mutableStateOf<HomeScreenApp?>(null) }
     var showSettings by remember { mutableStateOf(false) }
@@ -130,11 +133,15 @@ fun AppDrawerScreen(settings: LauncherSettings) {
                     homeApps = homeApps,
                     allApps = allApps,
                     mode = mode,
+                    guideLines = guideLines,
                     onTap = { app -> handleAppTap(app, mode, context, homeApps, ::save) { editingApp = it } },
                     onPositionChanged = { app, newX, newY ->
                         save(homeApps.map {
                             if (it.packageName == app.packageName) it.copy(xPos = newX, yPos = newY) else it
                         })
+                    },
+                    onGuidesChanged = { updatedGuides ->
+                        scope.launch { context.saveGuideLines(updatedGuides) }
                     }
                 )
 

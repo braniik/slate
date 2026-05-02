@@ -20,6 +20,7 @@ object PreferenceKeys {
     val LIST_ORIENTATION = stringPreferencesKey("list_orientation")
     val HOME_SCREEN_APPS = stringPreferencesKey("home_screen_apps")
     val WALLPAPER = stringPreferencesKey("wallpaper_config")
+    val GUIDE_LINES = stringPreferencesKey("guide_lines")
 }
 
 data class LauncherSettings(

@@ -15,6 +15,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -29,11 +30,18 @@ import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.graphics.drawable.toBitmap
+import com.braniik.slate.data.GuideLine
+import com.braniik.slate.data.GuideOrientation
 import com.braniik.slate.data.HomeScreenApp
 import com.braniik.slate.data.LocalWallpaperTextColor
 import com.braniik.slate.ui.drawer.AppInfo
 import com.braniik.slate.ui.drawer.HomeMode
 import com.braniik.slate.ui.theme.SlateDanger
+import kotlin.math.abs
+
+private const val SNAP_THRESHOLD_DP = 15f
+private const val BREAK_THRESHOLD_DP = 25f
+private const val PADDING_DP = 8f
 
 @Composable
 internal fun FreescreenIcon(
@@ -41,6 +49,7 @@ internal fun FreescreenIcon(
     info: AppInfo,
     containerSize: IntSize,
     mode: HomeMode,
+    guideLines: List<GuideLine> = emptyList(),
     onTap: () -> Unit,
     onPositionChanged: (Float, Float) -> Unit
 ) {
@@ -57,7 +66,14 @@ internal fun FreescreenIcon(
     val canDrag = mode == HomeMode.NORMAL || mode == HomeMode.EDITING
     val containerWidthDp = with(density) { containerSize.width.toDp().value }
     val containerHeightDp = with(density) { containerSize.height.toDp().value }
-    val iconFootprintDp = homeApp.iconSizeDp + 32f
+    val iconFootprintDp = homeApp.iconSizeDp + 2 * PADDING_DP
+    val iconHalfDp = homeApp.iconSizeDp / 2f
+    val centerOffsetDp = PADDING_DP + iconHalfDp
+
+    var snappedVertical by remember { mutableStateOf<GuideLine?>(null) }
+    var snappedHorizontal by remember { mutableStateOf<GuideLine?>(null) }
+    var perpAccumX by remember { mutableFloatStateOf(0f) }
+    var perpAccumY by remember { mutableFloatStateOf(0f) }
 
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -76,8 +92,14 @@ internal fun FreescreenIcon(
             }
             .then(
                 if (canDrag) {
-                    Modifier.pointerInput(homeApp.packageName) {
+                    Modifier.pointerInput(homeApp.packageName, guideLines) {
                         detectDragGestures(
+                            onDragStart = {
+                                snappedVertical = null
+                                snappedHorizontal = null
+                                perpAccumX = 0f
+                                perpAccumY = 0f
+                            },
                             onDragEnd = { onPositionChanged(localX, localY) },
                             onDrag = { change, dragAmount ->
                                 change.consume()
@@ -85,14 +107,67 @@ internal fun FreescreenIcon(
                                 val dyDp = with(density) { dragAmount.y.toDp().value }
                                 val maxX = (containerWidthDp - iconFootprintDp).coerceAtLeast(0f)
                                 val maxY = (containerHeightDp - iconFootprintDp).coerceAtLeast(0f)
-                                localX = (localX + dxDp).coerceIn(0f, maxX)
-                                localY = (localY + dyDp).coerceIn(0f, maxY)
+
+                                val rawNewX = localX + dxDp
+                                val rawNewY = localY + dyDp
+                                val sv = snappedVertical
+                                var newX: Float
+                                if (sv != null) {
+                                    perpAccumX += dxDp
+                                    if (abs(perpAccumX) > BREAK_THRESHOLD_DP) {
+                                        newX = (sv.positionDp - centerOffsetDp + perpAccumX)
+                                            .coerceIn(0f, maxX)
+                                        snappedVertical = null
+                                        perpAccumX = 0f
+                                    } else {
+                                        newX = (sv.positionDp - centerOffsetDp).coerceIn(0f, maxX)
+                                    }
+                                } else {
+                                    newX = rawNewX.coerceIn(0f, maxX)
+                                    val centerX = newX + centerOffsetDp
+                                    val nearV = guideLines
+                                        .filter { it.orientation == GuideOrientation.VERTICAL }
+                                        .minByOrNull { abs(centerX - it.positionDp) }
+                                    if (nearV != null && abs(centerX - nearV.positionDp) < SNAP_THRESHOLD_DP) {
+                                        snappedVertical = nearV
+                                        perpAccumX = 0f
+                                        newX = (nearV.positionDp - centerOffsetDp).coerceIn(0f, maxX)
+                                    }
+                                }
+
+                                val sh = snappedHorizontal
+                                var newY: Float
+                                if (sh != null) {
+                                    perpAccumY += dyDp
+                                    if (abs(perpAccumY) > BREAK_THRESHOLD_DP) {
+                                        newY = (sh.positionDp - centerOffsetDp + perpAccumY)
+                                            .coerceIn(0f, maxY)
+                                        snappedHorizontal = null
+                                        perpAccumY = 0f
+                                    } else {
+                                        newY = (sh.positionDp - centerOffsetDp).coerceIn(0f, maxY)
+                                    }
+                                } else {
+                                    newY = rawNewY.coerceIn(0f, maxY)
+                                    val centerY = newY + centerOffsetDp
+                                    val nearH = guideLines
+                                        .filter { it.orientation == GuideOrientation.HORIZONTAL }
+                                        .minByOrNull { abs(centerY - it.positionDp) }
+                                    if (nearH != null && abs(centerY - nearH.positionDp) < SNAP_THRESHOLD_DP) {
+                                        snappedHorizontal = nearH
+                                        perpAccumY = 0f
+                                        newY = (nearH.positionDp - centerOffsetDp).coerceIn(0f, maxY)
+                                    }
+                                }
+
+                                localX = newX
+                                localY = newY
                             }
                         )
                     }
                 } else Modifier
             )
-            .padding(8.dp)
+            .padding(PADDING_DP.dp)
     ) {
         val iconSize = homeApp.iconSizeDp.dp
         Image(
