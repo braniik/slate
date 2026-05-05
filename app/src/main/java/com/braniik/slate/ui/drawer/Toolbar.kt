@@ -2,8 +2,11 @@ package com.braniik.slate.ui.drawer
 
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
@@ -20,6 +23,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -31,16 +35,37 @@ import com.braniik.slate.ui.theme.SlateSubtle
 internal fun Toolbar(
     mode: HomeMode,
     showSettings: Boolean,
+    position: String,
+    onModeChange: (HomeMode) -> Unit,
+    onSettingsToggle: () -> Unit,
+    onBlanketSet: () -> Unit
+) {
+    val vertical = position == "left" || position == "right"
+
+    if (vertical) {
+        VerticalToolbar(mode, showSettings, position, onModeChange, onSettingsToggle, onBlanketSet)
+    } else {
+        HorizontalToolbar(mode, showSettings, position, onModeChange, onSettingsToggle, onBlanketSet)
+    }
+}
+
+@Composable
+private fun HorizontalToolbar(
+    mode: HomeMode,
+    showSettings: Boolean,
+    position: String,
     onModeChange: (HomeMode) -> Unit,
     onSettingsToggle: () -> Unit,
     onBlanketSet: () -> Unit
 ) {
     val textColor = LocalWallpaperTextColor.current
+    val insets = if (position == "bottom") Modifier.navigationBarsPadding()
+    else Modifier.statusBarsPadding()
 
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .statusBarsPadding()
+            .then(insets)
             .padding(horizontal = 20.dp, vertical = 12.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
@@ -54,6 +79,61 @@ internal fun Toolbar(
         )
 
         Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+            ToolbarIcon(Icons.Filled.Settings, "settings", showSettings) {
+                onSettingsToggle()
+            }
+            ToolbarIcon(Icons.Filled.Add, "add", mode == HomeMode.ADDING) {
+                onModeChange(HomeMode.ADDING)
+            }
+            ToolbarIcon(Icons.Filled.Edit, "edit", mode == HomeMode.EDITING) {
+                onModeChange(HomeMode.EDITING)
+            }
+            if (mode == HomeMode.EDITING) {
+                ToolbarIcon(Icons.Filled.Tune, "blanket set", false) {
+                    onBlanketSet()
+                }
+            }
+            ToolbarIcon(Icons.Filled.Delete, "remove", mode == HomeMode.DELETING) {
+                onModeChange(HomeMode.DELETING)
+            }
+        }
+    }
+}
+
+@Composable
+private fun VerticalToolbar(
+    mode: HomeMode,
+    showSettings: Boolean,
+    position: String,
+    onModeChange: (HomeMode) -> Unit,
+    onSettingsToggle: () -> Unit,
+    onBlanketSet: () -> Unit
+) {
+    val textColor = LocalWallpaperTextColor.current
+    val rotation = if (position == "left") -90f else 90f
+
+    Column(
+        modifier = Modifier
+            .fillMaxHeight()
+            .statusBarsPadding()
+            .navigationBarsPadding()
+            .padding(horizontal = 8.dp, vertical = 16.dp),
+        verticalArrangement = Arrangement.SpaceBetween,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text(
+            "slate",
+            fontSize = 18.sp,
+            fontWeight = FontWeight.Light,
+            color = textColor,
+            letterSpacing = 4.sp,
+            modifier = Modifier.rotate(rotation)
+        )
+
+        Column(
+            verticalArrangement = Arrangement.spacedBy(4.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
             ToolbarIcon(Icons.Filled.Settings, "settings", showSettings) {
                 onSettingsToggle()
             }

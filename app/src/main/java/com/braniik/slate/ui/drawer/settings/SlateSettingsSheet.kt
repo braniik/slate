@@ -16,8 +16,10 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.Icon
@@ -50,9 +52,11 @@ import com.braniik.slate.ui.theme.SlateSurface
 fun SlateSettingsSheet(
     layoutMode: String,
     listOrientation: String,
+    toolbarPosition: String,
     wallpaperConfig: WallpaperConfig,
     onSwitchMode: (String) -> Unit,
     onListOrientationChange: (String) -> Unit,
+    onToolbarPositionChange: (String) -> Unit,
     onOpenWallpaperPicker: () -> Unit,
     onClose: () -> Unit
 ) {
@@ -77,6 +81,7 @@ fun SlateSettingsSheet(
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
+                    .verticalScroll(rememberScrollState())
                     .padding(horizontal = 20.dp),
                 verticalArrangement = Arrangement.spacedBy(4.dp)
             ) {
@@ -117,6 +122,21 @@ fun SlateSettingsSheet(
                     OrientationOption("horizontal", "scroll left & right", listOrientation == "horizontal") {
                         onListOrientationChange("horizontal")
                     }
+                }
+
+                Spacer(Modifier.height(24.dp))
+                SectionLabel("toolbar position")
+                OrientationOption("top", "default", toolbarPosition == "top") {
+                    onToolbarPositionChange("top")
+                }
+                OrientationOption("bottom", "near your thumb", toolbarPosition == "bottom") {
+                    onToolbarPositionChange("bottom")
+                }
+                OrientationOption("left", "side strip", toolbarPosition == "left") {
+                    onToolbarPositionChange("left")
+                }
+                OrientationOption("right", "side strip", toolbarPosition == "right") {
+                    onToolbarPositionChange("right")
                 }
 
                 Spacer(Modifier.height(24.dp))

@@ -3,6 +3,7 @@ package com.braniik.slate.ui.drawer
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -26,6 +27,7 @@ import com.braniik.slate.data.saveGuideLines
 import com.braniik.slate.data.saveHomeScreenApps
 import com.braniik.slate.data.saveLayoutMode
 import com.braniik.slate.data.saveListOrientation
+import com.braniik.slate.data.saveToolbarPosition
 import com.braniik.slate.data.saveWallpaperConfig
 import com.braniik.slate.data.wallpaperConfigFlow
 import com.braniik.slate.ui.drawer.common.BlanketSetDialog
@@ -78,30 +80,38 @@ fun AppDrawerScreen(settings: LauncherSettings) {
         android.util.Log.d("Slate", "showSettings set to false")
     }
 
-    Box(modifier = Modifier.fillMaxSize()) {
-        Column(modifier = Modifier.fillMaxSize()) {
-            Toolbar(
-                mode = mode,
-                showSettings = showSettings,
-                onModeChange = { newMode ->
-                    showSettings = false
-                    mode = if (mode == newMode) HomeMode.NORMAL else newMode
-                },
-                onSettingsToggle = {
-                    showSettings = !showSettings
-                    if (showSettings) mode = HomeMode.NORMAL
-                },
-                onBlanketSet = { showBlanketSet = true }
-            )
+    val pos = settings.toolbarPosition
+    val sideToolbar = pos == "left" || pos == "right"
 
+    val toolbar: @Composable () -> Unit = {
+        Toolbar(
+            mode = mode,
+            showSettings = showSettings,
+            position = pos,
+            onModeChange = { newMode ->
+                showSettings = false
+                mode = if (mode == newMode) HomeMode.NORMAL else newMode
+            },
+            onSettingsToggle = {
+                showSettings = !showSettings
+                if (showSettings) mode = HomeMode.NORMAL
+            },
+            onBlanketSet = { showBlanketSet = true }
+        )
+    }
+
+    val content: @Composable (Modifier) -> Unit = { modifier ->
+        Box(modifier = modifier) {
             when {
                 showSettings -> {
                     SlateSettingsSheet(
                         layoutMode = settings.layoutMode,
                         listOrientation = settings.listOrientation,
+                        toolbarPosition = pos,
                         wallpaperConfig = wallpaperConfig,
                         onSwitchMode = ::switchMode,
                         onListOrientationChange = { scope.launch { context.saveListOrientation(it) } },
+                        onToolbarPositionChange = { scope.launch { context.saveToolbarPosition(it) } },
                         onOpenWallpaperPicker = { showWallpaperPicker = true },
                         onClose = { showSettings = false }
                     )
@@ -156,6 +166,22 @@ fun AppDrawerScreen(settings: LauncherSettings) {
                         onReorder = ::save
                     )
                 }
+            }
+        }
+    }
+
+    Box(modifier = Modifier.fillMaxSize()) {
+        if (sideToolbar) {
+            Row(modifier = Modifier.fillMaxSize()) {
+                if (pos == "left") toolbar()
+                content(Modifier.weight(1f))
+                if (pos == "right") toolbar()
+            }
+        } else {
+            Column(modifier = Modifier.fillMaxSize()) {
+                if (pos == "top") toolbar()
+                content(Modifier.weight(1f))
+                if (pos == "bottom") toolbar()
             }
         }
 

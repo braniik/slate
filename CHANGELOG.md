@@ -1,5 +1,14 @@
 # Slate Changelog
 
+## 0.5 → 0.5.1
+ 
+**0.5.1** adds toolbar position snapping:
+ 
+- **Toolbar position:** The toolbar can now sit on any edge of the screen. Set it in settings under "toolbar position."
+- Top and bottom positions keep the familiar horizontal layout. Left and right switch to a vertical strip with the "slate" title rotated sideways.
+- System bar insets adapt per position: status bar padding on top, navigation bar padding on bottom, both on sides.
+- Settings panel now scrolls to accommodate the extra options.
+
 ## 0.4.1 → 0.5
 
 **0.5** introduces guide lines for freescreen mode:

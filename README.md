@@ -20,6 +20,7 @@ Coming soon.
 - **List mode:** Vertical or horizontal scrolling list. Drag-to-reorder in edit mode.
 - **Guide lines:** In edit mode, swipe from screen edges to create guide lines. Icons snap to guides and slide along them.
 - **Wallpapers:** Solid color, gradient (8 directions), or image. Auto-contrast text adapts to whatever you set.
+- **Toolbar position:** Snap the toolbar to any screen edge.
 - **Per-app customization:** Icon size, label visibility, text size (list mode), all configurable per individual app.
 - **Blanket-set:** Apply icon size or label settings to every app at once.
 - **You choose what shows up.** Tap + to add apps, tap the trash to remove. Nothing appears unless you put it there.
@@ -31,7 +32,7 @@ Coming soon.
 | Plus | Adding | Browse installed apps and add them to your home screen |
 | Pen | Editing | Tap an app to customize it, drag to reposition (freescreen) or reorder (list). Create and manage guide lines in freescreen |
 | Bin | Deleting | Tap an app to remove it from the home screen |
-| Cog | Settings | Switch layout mode, change list orientation, customize wallpaper |
+| Cog | Settings | Switch layout mode, change list orientation, set toolbar position, customize wallpaper |
 | Tune | Blanket-set | Appears in edit mode. Set icon size/labels for all apps at once |
 
 ## Installation
@@ -72,7 +73,7 @@ git clone https://github.com/braniik/slate.git
     │   ├── AppDrawerScreen.kt      — main state hub, wires all modes and dialogs together
     │   ├── AppLoader.kt            — queries PackageManager for installed launcher apps
     │   ├── HomeMode.kt             — NORMAL, ADDING, EDITING, DELETING enum
-    │   ├── Toolbar.kt              — top bar with mode toggle buttons
+    │   ├── Toolbar.kt              — position-aware toolbar
     │   ├── common/
     │   │   ├── BlanketSetDialog.kt — bulk-set icon size/labels for all apps
     │   │   └── EditDialogShell.kt  — reusable dialog frame with save/close
@@ -85,7 +86,7 @@ git clone https://github.com/braniik/slate.git
     │   │   ├── HomeList.kt         — vertical/horizontal list with drag-to-reorder
     │   │   └── ListEditDialog.kt   — per-item text size, icon size, icon toggle
     │   └── settings/
-    │       ├── SlateSettingsSheet.kt — layout mode switch, list orientation, wallpaper access
+    │       ├── SlateSettingsSheet.kt — layout mode switch, list orientation, toolbar position, wallpaper access
     │       └── WallpaperPicker.kt    — solid/gradient/image wallpaper configuration
     ├── setup/
     │   └── SetupScreen.kt          — first-launch layout picker
@@ -105,7 +106,7 @@ git clone https://github.com/braniik/slate.git
 - [x] 0.4 — Wallpapers (solid, gradient, auto-contrast)
 - [x] 0.4.1 — Image wallpapers, palette extraction
 - [x] 0.5 — Guide lines for freescreen
-- [ ] 0.5.1 — Toolbar snapping (top, bottom, left, right)
+- [x] 0.5.1 — Toolbar snapping (top, bottom, left, right)
 - [ ] 0.6 — Icon shapes, icon customization, icon pack support
 - [ ] 0.6.1 — Icon rotation
 - [ ] 0.6.2 — App folders
