@@ -50,7 +50,7 @@ fun AppDrawerScreen(settings: LauncherSettings) {
     val wallpaperConfig by context.wallpaperConfigFlow().collectAsState(initial = WallpaperConfig())
     val guideLines by context.guideLinesFlow().collectAsState(initial = emptyList())
     var mode by remember { mutableStateOf(HomeMode.NORMAL) }
-    var editingApp by remember { mutableStateOf<HomeScreenApp?>(null) }
+    var editingPkg by remember { mutableStateOf<String?>(null) }
     var showSettings by remember { mutableStateOf(false) }
     var showBlanketSet by remember { mutableStateOf(false) }
     var showWallpaperPicker by remember { mutableStateOf(false) }
@@ -144,7 +144,7 @@ fun AppDrawerScreen(settings: LauncherSettings) {
                     allApps = allApps,
                     mode = mode,
                     guideLines = guideLines,
-                    onTap = { app -> handleAppTap(app, mode, context, homeApps, ::save) { editingApp = it } },
+                    onTap = { app -> handleAppTap(app, mode, context, homeApps, ::save) { editingPkg = it.packageName } },
                     onPositionChanged = { app, newX, newY ->
                         save(homeApps.map {
                             if (it.packageName == app.packageName) it.copy(xPos = newX, yPos = newY) else it
@@ -162,7 +162,7 @@ fun AppDrawerScreen(settings: LauncherSettings) {
                         allApps = allApps,
                         mode = mode,
                         horizontal = settings.listOrientation == "horizontal",
-                        onTap = { app -> handleAppTap(app, mode, context, homeApps, ::save) { editingApp = it } },
+                        onTap = { app -> handleAppTap(app, mode, context, homeApps, ::save) { editingPkg = it.packageName } },
                         onReorder = ::save
                     )
                 }
@@ -185,16 +185,17 @@ fun AppDrawerScreen(settings: LauncherSettings) {
             }
         }
 
-        editingApp?.let { app ->
-            val info = allApps.find { it.packageName == app.packageName } ?: return@let
+        editingPkg?.let { pkg ->
+            val app = homeApps.find { it.packageName == pkg } ?: run { editingPkg = null; return@let }
+            val info = allApps.find { it.packageName == pkg } ?: return@let
             val onSave: (HomeScreenApp) -> Unit = { updated ->
                 save(homeApps.map { if (it.packageName == updated.packageName) updated else it })
-                editingApp = null
+                editingPkg = null
             }
             if (settings.layoutMode == "freescreen") {
-                FreescreenEditDialog(app, info, onDismiss = { editingApp = null }, onSave = onSave)
+                FreescreenEditDialog(app, info, onDismiss = { editingPkg = null }, onSave = onSave)
             } else {
-                ListEditDialog(app, info, onDismiss = { editingApp = null }, onSave = onSave)
+                ListEditDialog(app, info, onDismiss = { editingPkg = null }, onSave = onSave)
             }
         }
 

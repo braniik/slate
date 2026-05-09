@@ -1,5 +1,18 @@
 # Slate Changelog
 
+## 0.5.1 → 0.5.2
+ 
+**0.5.2** adds icon shape customization:
+ 
+- **Icon shapes:** Five clipping shapes for app icons: round (default), square, squircle, hexagon, and octagon.
+- **Per-app shape:** In edit mode, tap any app and pick a shape in its settings dialog. Works in both freescreen and list modes.
+- **Blanket-set shape:** The bulk-edit dialog now includes the shape picker, so you can set all icons to the same shape at once.
+- **Unmasked icon rendering:** Adaptive icon drawables are now rendered without the system's circular mask, so square and squircle shapes display correctly instead of clipping an already-circular bitmap.
+- **Position-stable resizing:** Changing an icon's size in the edit dialog or via blanket-set now adjusts its stored position so the icon center stays in place relative to guide lines.
+- **Fixed stale edit data:** The edit dialog now resolves app data live from DataStore instead of using a snapshot from tap time, preventing position corruption after drag-then-edit sequences.
+- **Fixed stale snap math:** The drag gesture handler now recreates when icon size changes, so guideline snapping uses the correct center offset for the current size instead of the original.
+
+
 ## 0.5 → 0.5.1
  
 **0.5.1** adds toolbar position snapping:

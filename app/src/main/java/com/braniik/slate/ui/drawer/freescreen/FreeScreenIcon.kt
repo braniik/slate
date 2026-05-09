@@ -29,13 +29,14 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.core.graphics.drawable.toBitmap
+import com.braniik.slate.ui.drawer.toUnmaskedBitmap
 import com.braniik.slate.data.GuideLine
 import com.braniik.slate.data.GuideOrientation
 import com.braniik.slate.data.HomeScreenApp
 import com.braniik.slate.data.LocalWallpaperTextColor
 import com.braniik.slate.ui.drawer.AppInfo
 import com.braniik.slate.ui.drawer.HomeMode
+import com.braniik.slate.ui.drawer.common.iconShapeFor
 import com.braniik.slate.ui.theme.SlateDanger
 import kotlin.math.abs
 
@@ -92,7 +93,7 @@ internal fun FreescreenIcon(
             }
             .then(
                 if (canDrag) {
-                    Modifier.pointerInput(homeApp.packageName, guideLines) {
+                    Modifier.pointerInput(homeApp.packageName, homeApp.iconSizeDp, guideLines) {
                         detectDragGestures(
                             onDragStart = {
                                 snappedVertical = null
@@ -171,9 +172,11 @@ internal fun FreescreenIcon(
     ) {
         val iconSize = homeApp.iconSizeDp.dp
         Image(
-            bitmap = info.icon.toBitmap(iconSize.value.toInt(), iconSize.value.toInt()).asImageBitmap(),
+            bitmap = info.icon.toUnmaskedBitmap(iconSize.value.toInt()).asImageBitmap(),
             contentDescription = info.label,
-            modifier = Modifier.size(iconSize)
+            modifier = Modifier
+                .size(iconSize)
+                .clip(iconShapeFor(homeApp.iconShape))
         )
         if (homeApp.showLabel) {
             Text(

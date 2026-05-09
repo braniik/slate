@@ -21,13 +21,14 @@ import androidx.compose.ui.unit.dp
 import com.braniik.slate.data.HomeScreenApp
 import com.braniik.slate.ui.drawer.AppInfo
 import com.braniik.slate.ui.drawer.common.EditDialogShell
+import com.braniik.slate.ui.drawer.common.IconShapePicker
 import com.braniik.slate.ui.drawer.common.OptionLabel
 import com.braniik.slate.ui.theme.SlateBackground
 import com.braniik.slate.ui.theme.SlateOnBackground
 import com.braniik.slate.ui.theme.SlateSubtle
 
 private val sliderColors
-    @Composable get() = SliderDefaults.colors(
+  @Composable get() = SliderDefaults.colors(
         thumbColor = SlateOnBackground,
         activeTrackColor = SlateOnBackground,
         inactiveTrackColor = SlateSubtle
@@ -51,6 +52,7 @@ fun ListEditDialog(
     var textSize by remember { mutableIntStateOf(app.listTextSizeSp) }
     var iconSize by remember { mutableIntStateOf(app.listIconSizeDp) }
     var showIcon by remember { mutableStateOf(app.showLabel) }
+    var iconShape by remember { mutableStateOf(app.iconShape) }
 
     EditDialogShell(
         title = info.label,
@@ -59,7 +61,8 @@ fun ListEditDialog(
             onSave(app.copy(
                 listTextSizeSp = textSize,
                 listIconSizeDp = iconSize,
-                showLabel = showIcon
+                showLabel = showIcon,
+                iconShape = iconShape
             ))
         }
     ) {
@@ -84,6 +87,12 @@ fun ListEditDialog(
             colors = sliderColors,
             modifier = Modifier.fillMaxWidth()
         )
+
+        Spacer(Modifier.height(12.dp))
+
+        OptionLabel("icon shape")
+        Spacer(Modifier.height(4.dp))
+        IconShapePicker(selected = iconShape, onSelect = { iconShape = it })
 
         Spacer(Modifier.height(12.dp))
 

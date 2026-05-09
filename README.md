@@ -21,8 +21,9 @@ Coming soon.
 - **Guide lines:** In edit mode, swipe from screen edges to create guide lines. Icons snap to guides and slide along them.
 - **Wallpapers:** Solid color, gradient (8 directions), or image. Auto-contrast text adapts to whatever you set.
 - **Toolbar position:** Snap the toolbar to any screen edge.
-- **Per-app customization:** Icon size, label visibility, text size (list mode), all configurable per individual app.
-- **Blanket-set:** Apply icon size or label settings to every app at once.
+- **Per-app customization:** Icon size, label visibility, text size (list mode), icon shape, all configurable per individual app.
+- **Icon shapes:** Round, square, squircle, hexagon, octagon. Pick per icon or blanket-set all at once.
+- **Blanket-set:** Apply icon size, shape, or label settings to every app at once.
 - **You choose what shows up.** Tap + to add apps, tap the trash to remove. Nothing appears unless you put it there.
 
 ## Toolbar modes
@@ -71,20 +72,21 @@ git clone https://github.com/braniik/slate.git
     ├── drawer/
     │   ├── AddAppsOverlay.kt       — scrollable picker for adding apps to home
     │   ├── AppDrawerScreen.kt      — main state hub, wires all modes and dialogs together
-    │   ├── AppLoader.kt            — queries PackageManager for installed launcher apps
+    │   ├── AppLoader.kt            — queries PackageManager, unmasked adaptive icon rendering
     │   ├── HomeMode.kt             — NORMAL, ADDING, EDITING, DELETING enum
     │   ├── Toolbar.kt              — position-aware toolbar
     │   ├── common/
-    │   │   ├── BlanketSetDialog.kt — bulk-set icon size/labels for all apps
-    │   │   └── EditDialogShell.kt  — reusable dialog frame with save/close
+    │   │   ├── BlanketSetDialog.kt — bulk-set icon size/shape/labels for all apps
+    │   │   ├── EditDialogShell.kt  — reusable dialog frame with save/close
+    │   │   └── IconShape.kt        — shape definitions and picker
     │   ├── freescreen/
     │   │   ├── FreeScreenIcon.kt       — draggable icon with per-axis guide line snapping
-    │   │   ├── FreescreenEditDialog.kt — per-icon size and label toggle
+    │   │   ├── FreescreenEditDialog.kt — per-icon size, shape, and label toggle
     │   │   ├── GuideLineLayer.kt       — renders, creates, drags, and deletes guide lines
     │   │   └── HomeFreescreen.kt       — freescreen canvas, layers guides behind icons
     │   ├── list/
     │   │   ├── HomeList.kt         — vertical/horizontal list with drag-to-reorder
-    │   │   └── ListEditDialog.kt   — per-item text size, icon size, icon toggle
+    │   │   └── ListEditDialog.kt   — per-item text size, icon size, shape, icon toggle
     │   └── settings/
     │       ├── SlateSettingsSheet.kt — layout mode switch, list orientation, toolbar position, wallpaper access
     │       └── WallpaperPicker.kt    — solid/gradient/image wallpaper configuration
@@ -107,10 +109,11 @@ git clone https://github.com/braniik/slate.git
 - [x] 0.4.1 — Image wallpapers, palette extraction
 - [x] 0.5 — Guide lines for freescreen
 - [x] 0.5.1 — Toolbar snapping (top, bottom, left, right)
-- [ ] 0.6 — Icon shapes, icon customization, icon pack support
+- [x] 0.5.2 — Icon shapes (round, square, squircle, hexagon, octagon)
+- [ ] 0.6 — Icon pack support
 - [ ] 0.6.1 — Icon rotation
-- [ ] 0.6.2 — App folders
-- [ ] 0.7 — Polish pass
+- [ ] 0.7 — App folders
+- [ ] 0.8 — Refinement
 - [ ] 1.0 — F-Droid release (and other stores, if Android stays open)
 
 ## Contributing

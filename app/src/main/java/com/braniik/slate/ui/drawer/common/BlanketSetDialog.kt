@@ -55,12 +55,22 @@ private fun FreescreenBlanket(
 ) {
     var iconSize by remember { mutableIntStateOf(56) }
     var showLabel by remember { mutableStateOf(true) }
+    var iconShape by remember { mutableStateOf("round") }
 
     EditDialogShell(
         title = "all apps",
         onDismiss = onDismiss,
         onSave = {
-            onApply { copy(iconSizeDp = iconSize, showLabel = showLabel) }
+            onApply {
+                val shift = (iconSize - iconSizeDp) / 2f
+                copy(
+                    iconSizeDp = iconSize,
+                    showLabel = showLabel,
+                    iconShape = iconShape,
+                    xPos = xPos - shift,
+                    yPos = yPos - shift
+                )
+            }
         }
     ) {
         OptionLabel("icon size — ${iconSize}dp")
@@ -72,6 +82,12 @@ private fun FreescreenBlanket(
             colors = sliderColors,
             modifier = Modifier.fillMaxWidth()
         )
+
+        Spacer(Modifier.height(16.dp))
+
+        OptionLabel("icon shape")
+        Spacer(Modifier.height(4.dp))
+        IconShapePicker(selected = iconShape, onSelect = { iconShape = it })
 
         Spacer(Modifier.height(16.dp))
 
@@ -98,12 +114,13 @@ private fun ListBlanket(
     var textSize by remember { mutableIntStateOf(16) }
     var iconSize by remember { mutableIntStateOf(32) }
     var showIcon by remember { mutableStateOf(true) }
+    var iconShape by remember { mutableStateOf("round") }
 
     EditDialogShell(
         title = "all apps",
         onDismiss = onDismiss,
         onSave = {
-            onApply { copy(listTextSizeSp = textSize, listIconSizeDp = iconSize, showLabel = showIcon) }
+            onApply { copy(listTextSizeSp = textSize, listIconSizeDp = iconSize, showLabel = showIcon, iconShape = iconShape) }
         }
     ) {
         OptionLabel("text size — ${textSize}sp")
@@ -127,6 +144,12 @@ private fun ListBlanket(
             colors = sliderColors,
             modifier = Modifier.fillMaxWidth()
         )
+
+        Spacer(Modifier.height(12.dp))
+
+        OptionLabel("icon shape")
+        Spacer(Modifier.height(4.dp))
+        IconShapePicker(selected = iconShape, onSelect = { iconShape = it })
 
         Spacer(Modifier.height(12.dp))
 

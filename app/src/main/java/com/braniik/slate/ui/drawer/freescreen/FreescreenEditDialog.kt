@@ -21,6 +21,7 @@ import androidx.compose.ui.unit.dp
 import com.braniik.slate.data.HomeScreenApp
 import com.braniik.slate.ui.drawer.AppInfo
 import com.braniik.slate.ui.drawer.common.EditDialogShell
+import com.braniik.slate.ui.drawer.common.IconShapePicker
 import com.braniik.slate.ui.drawer.common.OptionLabel
 import com.braniik.slate.ui.theme.SlateBackground
 import com.braniik.slate.ui.theme.SlateOnBackground
@@ -35,11 +36,21 @@ fun FreescreenEditDialog(
 ) {
     var iconSize by remember { mutableIntStateOf(app.iconSizeDp) }
     var showLabel by remember { mutableStateOf(app.showLabel) }
+    var iconShape by remember { mutableStateOf(app.iconShape) }
 
     EditDialogShell(
         title = info.label,
         onDismiss = onDismiss,
-        onSave = { onSave(app.copy(iconSizeDp = iconSize, showLabel = showLabel)) }
+        onSave = {
+            val shift = (iconSize - app.iconSizeDp) / 2f
+            onSave(app.copy(
+                iconSizeDp = iconSize,
+                showLabel = showLabel,
+                iconShape = iconShape,
+                xPos = app.xPos - shift,
+                yPos = app.yPos - shift
+            ))
+        }
     ) {
         OptionLabel("icon size — ${iconSize}dp")
         Slider(
@@ -54,6 +65,12 @@ fun FreescreenEditDialog(
             ),
             modifier = Modifier.fillMaxWidth()
         )
+
+        Spacer(Modifier.height(16.dp))
+
+        OptionLabel("icon shape")
+        Spacer(Modifier.height(4.dp))
+        IconShapePicker(selected = iconShape, onSelect = { iconShape = it })
 
         Spacer(Modifier.height(16.dp))
 

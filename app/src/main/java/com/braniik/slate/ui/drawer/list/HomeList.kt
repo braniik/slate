@@ -41,11 +41,12 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
-import androidx.core.graphics.drawable.toBitmap
+import com.braniik.slate.ui.drawer.toUnmaskedBitmap
 import com.braniik.slate.data.HomeScreenApp
 import com.braniik.slate.data.LocalWallpaperTextColor
 import com.braniik.slate.ui.drawer.AppInfo
 import com.braniik.slate.ui.drawer.HomeMode
+import com.braniik.slate.ui.drawer.common.iconShapeFor
 import com.braniik.slate.ui.theme.SlateDanger
 
 @Composable
@@ -213,12 +214,11 @@ private fun VerticalListItem(
         if (homeApp.showLabel) {
             val iconSize = homeApp.listIconSizeDp.dp
             Image(
-                bitmap = info.icon.toBitmap(
-                    iconSize.value.toInt(),
-                    iconSize.value.toInt()
-                ).asImageBitmap(),
+                bitmap = info.icon.toUnmaskedBitmap(iconSize.value.toInt()).asImageBitmap(),
                 contentDescription = info.label,
-                modifier = Modifier.size(iconSize)
+                modifier = Modifier
+                    .size(iconSize)
+                    .clip(iconShapeFor(homeApp.iconShape))
             )
             Spacer(Modifier.width(16.dp))
         }
@@ -281,12 +281,11 @@ private fun HorizontalListItem(
     ) {
         if (homeApp.showLabel) {
             Image(
-                bitmap = info.icon.toBitmap(
-                    iconSize.value.toInt(),
-                    iconSize.value.toInt()
-                ).asImageBitmap(),
+                bitmap = info.icon.toUnmaskedBitmap(iconSize.value.toInt()).asImageBitmap(),
                 contentDescription = info.label,
-                modifier = Modifier.size(iconSize)
+                modifier = Modifier
+                    .size(iconSize)
+                    .clip(iconShapeFor(homeApp.iconShape))
             )
         }
 
