@@ -19,12 +19,15 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.braniik.slate.data.HomeScreenApp
+import com.braniik.slate.data.IconPackManager
 import com.braniik.slate.data.LauncherSettings
 import com.braniik.slate.data.WallpaperConfig
 import com.braniik.slate.data.guideLinesFlow
 import com.braniik.slate.data.homeScreenAppsFlow
+import com.braniik.slate.data.iconPackFlow
 import com.braniik.slate.data.saveGuideLines
 import com.braniik.slate.data.saveHomeScreenApps
+import com.braniik.slate.data.saveIconPack
 import com.braniik.slate.data.saveLayoutMode
 import com.braniik.slate.data.saveListOrientation
 import com.braniik.slate.data.saveToolbarPosition
@@ -44,7 +47,12 @@ import kotlinx.coroutines.launch
 fun AppDrawerScreen(settings: LauncherSettings) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
-    val allApps = remember { loadApps(context) }
+
+    val selectedIconPack by context.iconPackFlow().collectAsState(initial = "")
+    val iconPackManager = remember(selectedIconPack) {
+        if (selectedIconPack.isNotBlank()) IconPackManager(context, selectedIconPack) else null
+    }
+    val allApps = remember(iconPackManager) { loadApps(context, iconPackManager) }
 
     val homeApps by context.homeScreenAppsFlow().collectAsState(initial = emptyList())
     val wallpaperConfig by context.wallpaperConfigFlow().collectAsState(initial = WallpaperConfig())
@@ -109,9 +117,11 @@ fun AppDrawerScreen(settings: LauncherSettings) {
                         listOrientation = settings.listOrientation,
                         toolbarPosition = pos,
                         wallpaperConfig = wallpaperConfig,
+                        selectedIconPack = selectedIconPack,
                         onSwitchMode = ::switchMode,
                         onListOrientationChange = { scope.launch { context.saveListOrientation(it) } },
                         onToolbarPositionChange = { scope.launch { context.saveToolbarPosition(it) } },
+                        onIconPackChange = { scope.launch { context.saveIconPack(it) } },
                         onOpenWallpaperPicker = { showWallpaperPicker = true },
                         onClose = { showSettings = false }
                     )

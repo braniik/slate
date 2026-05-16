@@ -23,6 +23,7 @@ Coming soon.
 - **Toolbar position:** Snap the toolbar to any screen edge.
 - **Per-app customization:** Icon size, label visibility, text size (list mode), icon shape, all configurable per individual app.
 - **Icon shapes:** Round, square, squircle, hexagon, octagon. Pick per icon or blanket-set all at once.
+- **Icon packs:** Supports all major pack formats (ADW, Nova, Apex, GO, Tesla)
 - **Blanket-set:** Apply icon size, shape, or label settings to every app at once.
 - **You choose what shows up.** Tap + to add apps, tap the trash to remove. Nothing appears unless you put it there.
 
@@ -33,7 +34,7 @@ Coming soon.
 | Plus | Adding | Browse installed apps and add them to your home screen |
 | Pen | Editing | Tap an app to customize it, drag to reposition (freescreen) or reorder (list). Create and manage guide lines in freescreen |
 | Bin | Deleting | Tap an app to remove it from the home screen |
-| Cog | Settings | Switch layout mode, change list orientation, set toolbar position, customize wallpaper |
+| Cog | Settings | Switch layout mode, change list orientation, set toolbar position, customize wallpaper, select icon pack |
 | Tune | Blanket-set | Appears in edit mode. Set icon size/labels for all apps at once |
 
 ## Installation
@@ -65,6 +66,7 @@ git clone https://github.com/braniik/slate.git
 ├── MainActivity.kt                — activity, edge-to-edge, wallpaper background
 ├── data/
 │   ├── GuideLine.kt               — guide line model, JSON serialization, DataStore persistence
+│   ├── IconPackManager.kt         — icon pack discovery, appfilter.xml parsing, icon resolution
 │   ├── LauncherPreferences.kt     — DataStore keys, HomeScreenApp model, settings flows
 │   ├── WallpaperConfig.kt         — wallpaper mode/colors/gradient, auto-contrast text color
 │   └── WallpaperImageStore.kt     — image save/load/compress, palette extraction
@@ -88,7 +90,7 @@ git clone https://github.com/braniik/slate.git
     │   │   ├── HomeList.kt         — vertical/horizontal list with drag-to-reorder
     │   │   └── ListEditDialog.kt   — per-item text size, icon size, shape, icon toggle
     │   └── settings/
-    │       ├── SlateSettingsSheet.kt — layout mode switch, list orientation, toolbar position, wallpaper access
+    │       ├── SlateSettingsSheet.kt — layout mode switch, list orientation, toolbar position, wallpaper access, icon pack selection
     │       └── WallpaperPicker.kt    — solid/gradient/image wallpaper configuration
     ├── setup/
     │   └── SetupScreen.kt          — first-launch layout picker
@@ -110,10 +112,10 @@ git clone https://github.com/braniik/slate.git
 - [x] 0.5 — Guide lines for freescreen
 - [x] 0.5.1 — Toolbar snapping (top, bottom, left, right)
 - [x] 0.5.2 — Icon shapes (round, square, squircle, hexagon, octagon)
-- [ ] 0.6 — Icon pack support
+- [x] 0.6 — Icon pack support
 - [ ] 0.6.1 — Icon rotation
-- [ ] 0.7 — App folders
-- [ ] 0.8 — Refinement
+- [ ] 0.6.2 — App folders
+- [ ] 0.7 — Polish and refinement
 - [ ] 1.0 — F-Droid release (and other stores, if Android stays open)
 
 ## Contributing

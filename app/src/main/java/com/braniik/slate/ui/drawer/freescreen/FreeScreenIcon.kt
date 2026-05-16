@@ -171,8 +171,9 @@ internal fun FreescreenIcon(
             .padding(PADDING_DP.dp)
     ) {
         val iconSize = homeApp.iconSizeDp.dp
+        val density = LocalDensity.current
         Image(
-            bitmap = info.icon.toUnmaskedBitmap(iconSize.value.toInt()).asImageBitmap(),
+            bitmap = info.icon.toUnmaskedBitmap(with(density) { iconSize.toPx().toInt() }).asImageBitmap(),
             contentDescription = info.label,
             modifier = Modifier
                 .size(iconSize)

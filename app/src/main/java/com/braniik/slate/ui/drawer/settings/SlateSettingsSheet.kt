@@ -37,10 +37,12 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.braniik.slate.data.WallpaperConfig
+import com.braniik.slate.data.discoverIconPacks
 import com.braniik.slate.data.loadWallpaperBitmap
 import com.braniik.slate.ui.theme.SlateDanger
 import com.braniik.slate.ui.theme.SlateOnBackground
@@ -54,9 +56,11 @@ fun SlateSettingsSheet(
     listOrientation: String,
     toolbarPosition: String,
     wallpaperConfig: WallpaperConfig,
+    selectedIconPack: String,
     onSwitchMode: (String) -> Unit,
     onListOrientationChange: (String) -> Unit,
     onToolbarPositionChange: (String) -> Unit,
+    onIconPackChange: (String) -> Unit,
     onOpenWallpaperPicker: () -> Unit,
     onClose: () -> Unit
 ) {
@@ -160,6 +164,35 @@ fun SlateSettingsSheet(
                         fontSize = 13.sp,
                         color = SlateOnBackground,
                         letterSpacing = 1.sp
+                    )
+                }
+
+                Spacer(Modifier.height(24.dp))
+                SectionLabel("icon pack")
+
+                val context = LocalContext.current
+                val iconPacks = remember { discoverIconPacks(context) }
+
+                OrientationOption(
+                    "none",
+                    "system default",
+                    selectedIconPack.isBlank()
+                ) { onIconPackChange("") }
+
+                iconPacks.forEach { pack ->
+                    OrientationOption(
+                        pack.label,
+                        pack.packageName,
+                        selectedIconPack == pack.packageName
+                    ) { onIconPackChange(pack.packageName) }
+                }
+
+                if (iconPacks.isEmpty()) {
+                    Text(
+                        "no icon packs installed",
+                        fontSize = 11.sp,
+                        color = SlateSubtle,
+                        modifier = Modifier.padding(vertical = 8.dp, horizontal = 4.dp)
                     )
                 }
             }

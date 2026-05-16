@@ -8,6 +8,7 @@ import android.graphics.Rect
 import android.graphics.drawable.AdaptiveIconDrawable
 import android.graphics.drawable.Drawable
 import androidx.core.graphics.drawable.toBitmap
+import com.braniik.slate.data.IconPackManager
 
 data class AppInfo(
     val label: String,
@@ -28,7 +29,7 @@ fun Drawable.toUnmaskedBitmap(sizePx: Int): Bitmap {
     return toBitmap(sizePx, sizePx)
 }
 
-fun loadApps(context: Context): List<AppInfo> {
+fun loadApps(context: Context, iconPackManager: IconPackManager? = null): List<AppInfo> {
     val intent = Intent(Intent.ACTION_MAIN).apply {
         addCategory(Intent.CATEGORY_LAUNCHER)
     }
@@ -36,10 +37,12 @@ fun loadApps(context: Context): List<AppInfo> {
         .queryIntentActivities(intent, 0)
         .sortedBy { it.loadLabel(context.packageManager).toString().lowercase() }
         .map { info ->
+            val pkg = info.activityInfo.packageName
+            val icon = iconPackManager?.getIcon(pkg) ?: info.loadIcon(context.packageManager)
             AppInfo(
                 label = info.loadLabel(context.packageManager).toString(),
-                packageName = info.activityInfo.packageName,
-                icon = info.loadIcon(context.packageManager)
+                packageName = pkg,
+                icon = icon
             )
         }
 }

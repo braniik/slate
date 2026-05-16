@@ -1,5 +1,14 @@
 # Slate Changelog
 
+## 0.5.2 → 0.6
+ 
+**0.6** adds icon pack support:
+ 
+- **Icon packs:** Slate discovers installed icon packs and lists them in settings under "icon pack." Select one and all home screen icons update immediately. Apps the pack doesn't cover keep their system icon.
+- **Three-source parsing:** Reads `appfilter.xml` from `res/xml/`, `res/raw/`, or `assets/`, that covers all major pack formats.
+- **Density-correct icon rendering:** Icons are now rasterized at the correct physical pixel count instead of using the dp value as pixels. Fixes blurry icons on high-density screens.
+- **Manifest queries:** Added intent queries for the 5 standard icon pack actions so discovery works under Android 11+ package visibility restrictions.
+
 ## 0.5.1 → 0.5.2
  
 **0.5.2** adds icon shape customization:

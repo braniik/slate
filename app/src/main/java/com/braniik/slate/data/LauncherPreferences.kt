@@ -22,6 +22,7 @@ object PreferenceKeys {
     val HOME_SCREEN_APPS = stringPreferencesKey("home_screen_apps")
     val WALLPAPER = stringPreferencesKey("wallpaper_config")
     val GUIDE_LINES = stringPreferencesKey("guide_lines")
+    val ICON_PACK = stringPreferencesKey("icon_pack")
 }
 
 data class LauncherSettings(
@@ -140,5 +141,14 @@ fun Context.wallpaperConfigFlow(): Flow<WallpaperConfig> =
 suspend fun Context.saveWallpaperConfig(config: WallpaperConfig) {
     dataStore.edit { prefs ->
         prefs[PreferenceKeys.WALLPAPER] = config.toJson()
+    }
+}
+
+fun Context.iconPackFlow(): Flow<String> =
+    dataStore.data.map { prefs -> prefs[PreferenceKeys.ICON_PACK] ?: "" }
+
+suspend fun Context.saveIconPack(packPackageName: String) {
+    dataStore.edit { prefs ->
+        prefs[PreferenceKeys.ICON_PACK] = packPackageName
     }
 }

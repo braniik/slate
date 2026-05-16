@@ -41,6 +41,7 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
+import androidx.compose.ui.platform.LocalDensity
 import com.braniik.slate.ui.drawer.toUnmaskedBitmap
 import com.braniik.slate.data.HomeScreenApp
 import com.braniik.slate.data.LocalWallpaperTextColor
@@ -213,8 +214,9 @@ private fun VerticalListItem(
     ) {
         if (homeApp.showLabel) {
             val iconSize = homeApp.listIconSizeDp.dp
+            val density = LocalDensity.current
             Image(
-                bitmap = info.icon.toUnmaskedBitmap(iconSize.value.toInt()).asImageBitmap(),
+                bitmap = info.icon.toUnmaskedBitmap(with(density) { iconSize.toPx().toInt() }).asImageBitmap(),
                 contentDescription = info.label,
                 modifier = Modifier
                     .size(iconSize)
@@ -280,8 +282,9 @@ private fun HorizontalListItem(
             .padding(horizontal = 12.dp, vertical = 10.dp)
     ) {
         if (homeApp.showLabel) {
+            val density = LocalDensity.current
             Image(
-                bitmap = info.icon.toUnmaskedBitmap(iconSize.value.toInt()).asImageBitmap(),
+                bitmap = info.icon.toUnmaskedBitmap(with(density) { iconSize.toPx().toInt() }).asImageBitmap(),
                 contentDescription = info.label,
                 modifier = Modifier
                     .size(iconSize)
