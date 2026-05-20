@@ -21,6 +21,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
@@ -177,6 +178,7 @@ internal fun FreescreenIcon(
             contentDescription = info.label,
             modifier = Modifier
                 .size(iconSize)
+                .rotate(homeApp.rotationDeg)
                 .clip(iconShapeFor(homeApp.iconShape))
         )
         if (homeApp.showLabel) {

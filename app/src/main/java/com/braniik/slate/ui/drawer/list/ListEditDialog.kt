@@ -11,6 +11,7 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -28,7 +29,7 @@ import com.braniik.slate.ui.theme.SlateOnBackground
 import com.braniik.slate.ui.theme.SlateSubtle
 
 private val sliderColors
-  @Composable get() = SliderDefaults.colors(
+    @Composable get() = SliderDefaults.colors(
         thumbColor = SlateOnBackground,
         activeTrackColor = SlateOnBackground,
         inactiveTrackColor = SlateSubtle
@@ -53,6 +54,7 @@ fun ListEditDialog(
     var iconSize by remember { mutableIntStateOf(app.listIconSizeDp) }
     var showIcon by remember { mutableStateOf(app.showLabel) }
     var iconShape by remember { mutableStateOf(app.iconShape) }
+    var rotation by remember { mutableFloatStateOf(app.rotationDeg) }
 
     EditDialogShell(
         title = info.label,
@@ -62,7 +64,8 @@ fun ListEditDialog(
                 listTextSizeSp = textSize,
                 listIconSizeDp = iconSize,
                 showLabel = showIcon,
-                iconShape = iconShape
+                iconShape = iconShape,
+                rotationDeg = rotation
             ))
         }
     ) {
@@ -93,6 +96,17 @@ fun ListEditDialog(
         OptionLabel("icon shape")
         Spacer(Modifier.height(4.dp))
         IconShapePicker(selected = iconShape, onSelect = { iconShape = it })
+
+        Spacer(Modifier.height(12.dp))
+
+        OptionLabel("rotation — ${rotation.toInt()}°")
+        Slider(
+            value = rotation,
+            onValueChange = { rotation = it },
+            valueRange = -360f..360f,
+            colors = sliderColors,
+            modifier = Modifier.fillMaxWidth()
+        )
 
         Spacer(Modifier.height(12.dp))
 

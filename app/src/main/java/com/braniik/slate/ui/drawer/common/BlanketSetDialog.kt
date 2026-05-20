@@ -11,6 +11,7 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -56,6 +57,7 @@ private fun FreescreenBlanket(
     var iconSize by remember { mutableIntStateOf(56) }
     var showLabel by remember { mutableStateOf(true) }
     var iconShape by remember { mutableStateOf("round") }
+    var rotation by remember { mutableFloatStateOf(0f) }
 
     EditDialogShell(
         title = "all apps",
@@ -67,6 +69,7 @@ private fun FreescreenBlanket(
                     iconSizeDp = iconSize,
                     showLabel = showLabel,
                     iconShape = iconShape,
+                    rotationDeg = rotation,
                     xPos = xPos - shift,
                     yPos = yPos - shift
                 )
@@ -88,6 +91,17 @@ private fun FreescreenBlanket(
         OptionLabel("icon shape")
         Spacer(Modifier.height(4.dp))
         IconShapePicker(selected = iconShape, onSelect = { iconShape = it })
+
+        Spacer(Modifier.height(16.dp))
+
+        OptionLabel("rotation — ${rotation.toInt()}°")
+        Slider(
+            value = rotation,
+            onValueChange = { rotation = it },
+            valueRange = -360f..360f,
+            colors = sliderColors,
+            modifier = Modifier.fillMaxWidth()
+        )
 
         Spacer(Modifier.height(16.dp))
 
@@ -115,12 +129,13 @@ private fun ListBlanket(
     var iconSize by remember { mutableIntStateOf(32) }
     var showIcon by remember { mutableStateOf(true) }
     var iconShape by remember { mutableStateOf("round") }
+    var rotation by remember { mutableFloatStateOf(0f) }
 
     EditDialogShell(
         title = "all apps",
         onDismiss = onDismiss,
         onSave = {
-            onApply { copy(listTextSizeSp = textSize, listIconSizeDp = iconSize, showLabel = showIcon, iconShape = iconShape) }
+            onApply { copy(listTextSizeSp = textSize, listIconSizeDp = iconSize, showLabel = showIcon, iconShape = iconShape, rotationDeg = rotation) }
         }
     ) {
         OptionLabel("text size — ${textSize}sp")
@@ -150,6 +165,17 @@ private fun ListBlanket(
         OptionLabel("icon shape")
         Spacer(Modifier.height(4.dp))
         IconShapePicker(selected = iconShape, onSelect = { iconShape = it })
+
+        Spacer(Modifier.height(12.dp))
+
+        OptionLabel("rotation — ${rotation.toInt()}°")
+        Slider(
+            value = rotation,
+            onValueChange = { rotation = it },
+            valueRange = -360f..360f,
+            colors = sliderColors,
+            modifier = Modifier.fillMaxWidth()
+        )
 
         Spacer(Modifier.height(12.dp))
 

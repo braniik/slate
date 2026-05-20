@@ -1,5 +1,15 @@
 # Slate Changelog
 
+## 0.6 → 0.6.1
+ 
+**0.6.1** adds icon rotation:
+ 
+- **Icon rotation:** Rotate any icon from -360° to 360° via a continuous slider. Works in both freescreen and list modes.
+- **Per-app rotation:** In edit mode, tap any app to set its rotation individually.
+- **Blanket-set rotation:** The blanket-edit dialog includes rotation, so you can set all icons to the same angle at once.
+- **Shape-aware rotation:** The icon shape (hexagon, octagon, etc.) rotates together with the icon as a single unit.
+- **Zero snapping disruption:** Rotation is purely visual (graphicsLayer). Drag positioning, guideline snapping, and touch targets remain unaffected.
+
 ## 0.5.2 → 0.6
  
 **0.6** adds icon pack support:

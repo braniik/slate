@@ -11,6 +11,7 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -37,6 +38,7 @@ fun FreescreenEditDialog(
     var iconSize by remember { mutableIntStateOf(app.iconSizeDp) }
     var showLabel by remember { mutableStateOf(app.showLabel) }
     var iconShape by remember { mutableStateOf(app.iconShape) }
+    var rotation by remember { mutableFloatStateOf(app.rotationDeg) }
 
     EditDialogShell(
         title = info.label,
@@ -47,6 +49,7 @@ fun FreescreenEditDialog(
                 iconSizeDp = iconSize,
                 showLabel = showLabel,
                 iconShape = iconShape,
+                rotationDeg = rotation,
                 xPos = app.xPos - shift,
                 yPos = app.yPos - shift
             ))
@@ -71,6 +74,21 @@ fun FreescreenEditDialog(
         OptionLabel("icon shape")
         Spacer(Modifier.height(4.dp))
         IconShapePicker(selected = iconShape, onSelect = { iconShape = it })
+
+        Spacer(Modifier.height(16.dp))
+
+        OptionLabel("rotation — ${rotation.toInt()}°")
+        Slider(
+            value = rotation,
+            onValueChange = { rotation = it },
+            valueRange = -360f..360f,
+            colors = SliderDefaults.colors(
+                thumbColor = SlateOnBackground,
+                activeTrackColor = SlateOnBackground,
+                inactiveTrackColor = SlateSubtle
+            ),
+            modifier = Modifier.fillMaxWidth()
+        )
 
         Spacer(Modifier.height(16.dp))
 

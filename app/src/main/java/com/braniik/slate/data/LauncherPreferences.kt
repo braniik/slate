@@ -39,6 +39,7 @@ data class HomeScreenApp(
     val listTextSizeSp: Int = 16,
     val listIconSizeDp: Int = 32,
     val iconShape: String = "round",
+    val rotationDeg: Float = 0f,
     val xPos: Float = 0f,
     val yPos: Float = 0f,
     val order: Int = 0
@@ -51,6 +52,7 @@ fun HomeScreenApp.toJson(): JSONObject = JSONObject().apply {
     put("listTextSizeSp", listTextSizeSp)
     put("listIconSizeDp", listIconSizeDp)
     put("iconShape", iconShape)
+    put("rotationDeg", rotationDeg.toDouble())
     put("xPos", xPos.toDouble())
     put("yPos", yPos.toDouble())
     put("order", order)
@@ -63,6 +65,7 @@ fun JSONObject.toHomeScreenApp(): HomeScreenApp = HomeScreenApp(
     listTextSizeSp = optInt("listTextSizeSp", 16),
     listIconSizeDp = optInt("listIconSizeDp", 32),
     iconShape = optString("iconShape", "round"),
+    rotationDeg = optDouble("rotationDeg", 0.0).toFloat(),
     xPos = optDouble("xPos", 0.0).toFloat(),
     yPos = optDouble("yPos", 0.0).toFloat(),
     order = optInt("order", 0)

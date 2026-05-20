@@ -33,6 +33,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.style.TextAlign
@@ -220,6 +221,7 @@ private fun VerticalListItem(
                 contentDescription = info.label,
                 modifier = Modifier
                     .size(iconSize)
+                    .rotate(homeApp.rotationDeg)
                     .clip(iconShapeFor(homeApp.iconShape))
             )
             Spacer(Modifier.width(16.dp))
@@ -288,6 +290,7 @@ private fun HorizontalListItem(
                 contentDescription = info.label,
                 modifier = Modifier
                     .size(iconSize)
+                    .rotate(homeApp.rotationDeg)
                     .clip(iconShapeFor(homeApp.iconShape))
             )
         }

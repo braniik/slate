@@ -21,10 +21,11 @@ Coming soon.
 - **Guide lines:** In edit mode, swipe from screen edges to create guide lines. Icons snap to guides and slide along them.
 - **Wallpapers:** Solid color, gradient (8 directions), or image. Auto-contrast text adapts to whatever you set.
 - **Toolbar position:** Snap the toolbar to any screen edge.
-- **Per-app customization:** Icon size, label visibility, text size (list mode), icon shape, all configurable per individual app.
+- **Per-app customization:** Icon size, label visibility, text size (list mode), icon shape, rotation, all configurable per individual app.
 - **Icon shapes:** Round, square, squircle, hexagon, octagon. Pick per icon or blanket-set all at once.
+- **Icon rotation:** Rotate any icon from -360° to 360°. Shape rotates with the icon. Per-app or blanket-set.
 - **Icon packs:** Supports all major pack formats (ADW, Nova, Apex, GO, Tesla)
-- **Blanket-set:** Apply icon size, shape, or label settings to every app at once.
+- **Blanket-set:** Apply icon size, shape, rotation, or label settings to every app at once.
 - **You choose what shows up.** Tap + to add apps, tap the trash to remove. Nothing appears unless you put it there.
 
 ## Toolbar modes
@@ -35,7 +36,7 @@ Coming soon.
 | Pen | Editing | Tap an app to customize it, drag to reposition (freescreen) or reorder (list). Create and manage guide lines in freescreen |
 | Bin | Deleting | Tap an app to remove it from the home screen |
 | Cog | Settings | Switch layout mode, change list orientation, set toolbar position, customize wallpaper, select icon pack |
-| Tune | Blanket-set | Appears in edit mode. Set icon size/labels for all apps at once |
+| Tune | Blanket-set | Appears in edit mode. Set icon size/shape/rotation/labels for all apps at once |
 
 ## Installation
 
@@ -78,17 +79,17 @@ git clone https://github.com/braniik/slate.git
     │   ├── HomeMode.kt             — NORMAL, ADDING, EDITING, DELETING enum
     │   ├── Toolbar.kt              — position-aware toolbar
     │   ├── common/
-    │   │   ├── BlanketSetDialog.kt — bulk-set icon size/shape/labels for all apps
+    │   │   ├── BlanketSetDialog.kt — bulk-set icon size/shape/rotation/labels for all apps
     │   │   ├── EditDialogShell.kt  — reusable dialog frame with save/close
     │   │   └── IconShape.kt        — shape definitions and picker
     │   ├── freescreen/
     │   │   ├── FreeScreenIcon.kt       — draggable icon with per-axis guide line snapping
-    │   │   ├── FreescreenEditDialog.kt — per-icon size, shape, and label toggle
+    │   │   ├── FreescreenEditDialog.kt — per-icon size, shape, rotation, and label toggle
     │   │   ├── GuideLineLayer.kt       — renders, creates, drags, and deletes guide lines
     │   │   └── HomeFreescreen.kt       — freescreen canvas, layers guides behind icons
     │   ├── list/
     │   │   ├── HomeList.kt         — vertical/horizontal list with drag-to-reorder
-    │   │   └── ListEditDialog.kt   — per-item text size, icon size, shape, icon toggle
+    │   │   └── ListEditDialog.kt   — per-item text size, icon size, shape, rotation, icon toggle
     │   └── settings/
     │       ├── SlateSettingsSheet.kt — layout mode switch, list orientation, toolbar position, wallpaper access, icon pack selection
     │       └── WallpaperPicker.kt    — solid/gradient/image wallpaper configuration
@@ -113,7 +114,7 @@ git clone https://github.com/braniik/slate.git
 - [x] 0.5.1 — Toolbar snapping (top, bottom, left, right)
 - [x] 0.5.2 — Icon shapes (round, square, squircle, hexagon, octagon)
 - [x] 0.6 — Icon pack support
-- [ ] 0.6.1 — Icon rotation
+- [x] 0.6.1 — Icon rotation
 - [ ] 0.6.2 — App folders
 - [ ] 0.7 — Polish and refinement
 - [ ] 1.0 — F-Droid release (and other stores, if Android stays open)
