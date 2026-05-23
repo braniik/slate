@@ -115,7 +115,6 @@ git clone https://github.com/braniik/slate.git
 - [x] 0.5.2 — Icon shapes (round, square, squircle, hexagon, octagon)
 - [x] 0.6 — Icon pack support
 - [x] 0.6.1 — Icon rotation
-- [ ] 0.6.2 — App folders
 - [ ] 0.7 — Polish and refinement
 - [ ] 1.0 — F-Droid release (and other stores, if Android stays open)
 
