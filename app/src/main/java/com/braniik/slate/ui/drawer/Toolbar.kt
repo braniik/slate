@@ -28,7 +28,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.braniik.slate.data.LocalWallpaperTextColor
+import com.braniik.slate.data.LocalToolbarTextColor
 import com.braniik.slate.ui.theme.SlateSubtle
 
 @Composable
@@ -58,7 +58,7 @@ private fun HorizontalToolbar(
     onSettingsToggle: () -> Unit,
     onBlanketSet: () -> Unit
 ) {
-    val textColor = LocalWallpaperTextColor.current
+    val textColor = LocalToolbarTextColor.current
     val insets = if (position == "bottom") Modifier.navigationBarsPadding()
     else Modifier.statusBarsPadding()
 
@@ -109,7 +109,7 @@ private fun VerticalToolbar(
     onSettingsToggle: () -> Unit,
     onBlanketSet: () -> Unit
 ) {
-    val textColor = LocalWallpaperTextColor.current
+    val textColor = LocalToolbarTextColor.current
     val rotation = if (position == "left") -90f else 90f
 
     Column(
@@ -162,7 +162,7 @@ private fun ToolbarIcon(
     active: Boolean,
     onClick: () -> Unit
 ) {
-    val activeColor = LocalWallpaperTextColor.current
+    val activeColor = LocalToolbarTextColor.current
     val tint by animateColorAsState(
         if (active) activeColor else SlateSubtle,
         label = "toolbar_$label"

@@ -16,6 +16,7 @@ private val LightText = Color(0xFFFFFFFF)
 private val DarkText = Color(0xFF111111)
 
 val LocalWallpaperTextColor = compositionLocalOf { LightText }
+val LocalToolbarTextColor = compositionLocalOf { LightText }
 
 data class WallpaperConfig(
     val mode: String = "solid",
@@ -86,23 +87,60 @@ fun Modifier.wallpaperBackground(
     }
 }
 
-fun WallpaperConfig.textColor(): Color {
+fun WallpaperConfig.textColor(): Color = textColorAtFraction(0.5f)
+
+fun WallpaperConfig.textColorAt(screenEdge: String): Color {
+    val fraction = when (mode) {
+        "gradient" -> gradientFractionAt(screenEdge, gradientDirection)
+        else -> 0.5f
+    }
+    return textColorAtFraction(fraction)
+}
+
+private fun WallpaperConfig.textColorAtFraction(t: Float): Color {
     val representative = when (mode) {
         "image" -> Color(imageDominantColor)
-        "gradient" -> {
-            val a = Color(gradientStart)
-            val b = Color(gradientEnd)
-            Color(
-                red = (a.red + b.red) / 2f,
-                green = (a.green + b.green) / 2f,
-                blue = (a.blue + b.blue) / 2f
-            )
-        }
+        "gradient" -> lerpColor(Color(gradientStart), Color(gradientEnd), t)
         else -> Color(solidColor)
     }
     val luminance = 0.299f * representative.red + 0.587f * representative.green + 0.114f * representative.blue
     return if (luminance > 0.5f) DarkText else LightText
 }
+
+private fun lerpColor(a: Color, b: Color, t: Float): Color = Color(
+    red = a.red + (b.red - a.red) * t,
+    green = a.green + (b.green - a.green) * t,
+    blue = a.blue + (b.blue - a.blue) * t
+)
+
+private fun gradientFractionAt(screenEdge: String, gradientDirection: String): Float =
+    when (gradientDirection) {
+        "top_to_bottom" -> when (screenEdge) {
+            "top" -> 0.0f; "bottom" -> 1.0f; else -> 0.5f
+        }
+        "bottom_to_top" -> when (screenEdge) {
+            "top" -> 1.0f; "bottom" -> 0.0f; else -> 0.5f
+        }
+        "left_to_right" -> when (screenEdge) {
+            "left" -> 0.0f; "right" -> 1.0f; else -> 0.5f
+        }
+        "right_to_left" -> when (screenEdge) {
+            "left" -> 1.0f; "right" -> 0.0f; else -> 0.5f
+        }
+        "top_left_to_bottom_right" -> when (screenEdge) {
+            "top" -> 0.25f; "left" -> 0.25f; "bottom" -> 0.75f; "right" -> 0.75f; else -> 0.5f
+        }
+        "top_right_to_bottom_left" -> when (screenEdge) {
+            "top" -> 0.25f; "right" -> 0.25f; "bottom" -> 0.75f; "left" -> 0.75f; else -> 0.5f
+        }
+        "bottom_left_to_top_right" -> when (screenEdge) {
+            "bottom" -> 0.25f; "left" -> 0.25f; "top" -> 0.75f; "right" -> 0.75f; else -> 0.5f
+        }
+        "bottom_right_to_top_left" -> when (screenEdge) {
+            "bottom" -> 0.25f; "right" -> 0.25f; "top" -> 0.75f; "left" -> 0.75f; else -> 0.5f
+        }
+        else -> 0.5f
+    }
 
 private fun directionOffsets(direction: String, size: Size): Pair<Offset, Offset> =
     when (direction) {

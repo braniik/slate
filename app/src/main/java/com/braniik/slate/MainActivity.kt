@@ -9,12 +9,14 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import com.braniik.slate.data.LocalToolbarTextColor
 import com.braniik.slate.data.LocalWallpaperTextColor
 import com.braniik.slate.data.WallpaperConfig
 import com.braniik.slate.data.launcherSettingsFlow
 import com.braniik.slate.data.loadWallpaperBitmap
 import com.braniik.slate.data.saveSettings
 import com.braniik.slate.data.textColor
+import com.braniik.slate.data.textColorAt
 import com.braniik.slate.data.wallpaperBackground
 import com.braniik.slate.data.wallpaperConfigFlow
 import com.braniik.slate.ui.drawer.AppDrawerScreen
@@ -48,12 +50,17 @@ fun SlateApp() {
         else null
     }
 
+    val toolbarPos = settings?.toolbarPosition ?: "top"
+
     Box(
         modifier = Modifier
             .fillMaxSize()
             .wallpaperBackground(wallpaper, imageBitmap)
     ) {
-        CompositionLocalProvider(LocalWallpaperTextColor provides wallpaper.textColor()) {
+        CompositionLocalProvider(
+            LocalWallpaperTextColor provides wallpaper.textColor(),
+            LocalToolbarTextColor provides wallpaper.textColorAt(toolbarPos)
+        ) {
             when {
                 settings == null -> {}
                 !settings!!.setupDone -> {

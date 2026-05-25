@@ -1,5 +1,13 @@
 # Slate Changelog
 
+## 0.6.1 → 0.7.0
+ 
+**0.7.0** fixes toolbar text visibility on gradients:
+ 
+- **Position-aware toolbar contrast:** The toolbar now samples the gradient color at its actual screen edge instead of averaging the two gradient stops.
+- **All directions covered:** Works for all 8 gradient directions and all 4 toolbar positions, including diagonals (projects the edge midpoint onto the gradient axis).
+- **No effect on content text:** App labels, guide lines, and other scattered elements still use the midpoint average, which remains the best single-color guess for content spread across the screen.
+
 ## 0.6 → 0.6.1
  
 **0.6.1** adds icon rotation:
