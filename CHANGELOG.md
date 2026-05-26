@@ -1,5 +1,13 @@
 # Slate Changelog
 
+## 0.7.0 → 0.7.1
+ 
+**0.7.1** fixes toolbar text contrast on image wallpapers:
+ 
+- **Position-aware image sampling:** The toolbar now samples a thin pixel strip from the actual bitmap region behind it instead of relying on the whole-image dominant color.
+- **Center-crop aware:** The sampling replicates the exact center-crop transform used for rendering, so the sampled region matches what's actually displayed at the toolbar edge.
+- **Graceful fallback:** Falls back to the existing dominant color logic if the bitmap isn't loaded yet or the screen hasn't laid out.
+
 ## 0.6.1 → 0.7.0
  
 **0.7.0** fixes toolbar text visibility on gradients:

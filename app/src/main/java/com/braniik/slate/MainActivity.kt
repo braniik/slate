@@ -8,12 +8,15 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.IntSize
 import com.braniik.slate.data.LocalToolbarTextColor
 import com.braniik.slate.data.LocalWallpaperTextColor
 import com.braniik.slate.data.WallpaperConfig
 import com.braniik.slate.data.launcherSettingsFlow
 import com.braniik.slate.data.loadWallpaperBitmap
+import com.braniik.slate.data.sampleToolbarEdgeColor
 import com.braniik.slate.data.saveSettings
 import com.braniik.slate.data.textColor
 import com.braniik.slate.data.textColorAt
@@ -51,15 +54,26 @@ fun SlateApp() {
     }
 
     val toolbarPos = settings?.toolbarPosition ?: "top"
+    var screenSize by remember { mutableStateOf(IntSize.Zero) }
+
+    val toolbarTextColor = remember(wallpaper, imageBitmap, toolbarPos, screenSize) {
+        if (wallpaper.mode == "image" && imageBitmap != null && screenSize.width > 0 && screenSize.height > 0
+        ) {
+            sampleToolbarEdgeColor(imageBitmap, screenSize.width, screenSize.height, toolbarPos)
+        } else {
+            wallpaper.textColorAt(toolbarPos)
+        }
+    }
 
     Box(
         modifier = Modifier
             .fillMaxSize()
+            .onSizeChanged { screenSize = it }
             .wallpaperBackground(wallpaper, imageBitmap)
     ) {
         CompositionLocalProvider(
             LocalWallpaperTextColor provides wallpaper.textColor(),
-            LocalToolbarTextColor provides wallpaper.textColorAt(toolbarPos)
+            LocalToolbarTextColor provides toolbarTextColor
         ) {
             when {
                 settings == null -> {}
