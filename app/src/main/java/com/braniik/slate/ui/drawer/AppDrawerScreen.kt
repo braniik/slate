@@ -31,6 +31,7 @@ import com.braniik.slate.data.saveIconPack
 import com.braniik.slate.data.saveLayoutMode
 import com.braniik.slate.data.saveListOrientation
 import com.braniik.slate.data.saveToolbarPosition
+import com.braniik.slate.data.saveToolbarTitle
 import com.braniik.slate.data.saveWallpaperConfig
 import com.braniik.slate.data.wallpaperConfigFlow
 import com.braniik.slate.ui.drawer.common.BlanketSetDialog
@@ -96,6 +97,7 @@ fun AppDrawerScreen(settings: LauncherSettings) {
             mode = mode,
             showSettings = showSettings,
             position = pos,
+            title = settings.toolbarTitle,
             onModeChange = { newMode ->
                 showSettings = false
                 mode = if (mode == newMode) HomeMode.NORMAL else newMode
@@ -116,11 +118,13 @@ fun AppDrawerScreen(settings: LauncherSettings) {
                         layoutMode = settings.layoutMode,
                         listOrientation = settings.listOrientation,
                         toolbarPosition = pos,
+                        toolbarTitle = settings.toolbarTitle,
                         wallpaperConfig = wallpaperConfig,
                         selectedIconPack = selectedIconPack,
                         onSwitchMode = ::switchMode,
                         onListOrientationChange = { scope.launch { context.saveListOrientation(it) } },
                         onToolbarPositionChange = { scope.launch { context.saveToolbarPosition(it) } },
+                        onToolbarTitleChange = { scope.launch { context.saveToolbarTitle(it) } },
                         onIconPackChange = { scope.launch { context.saveIconPack(it) } },
                         onOpenWallpaperPicker = { showWallpaperPicker = true },
                         onClose = { showSettings = false }

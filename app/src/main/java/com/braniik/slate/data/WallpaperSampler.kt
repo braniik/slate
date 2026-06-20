@@ -6,6 +6,19 @@ import androidx.compose.ui.graphics.ImageBitmap
 private val LightText = Color(0xFFFFFFFF)
 private val DarkText = Color(0xFF111111)
 
+fun resolveEdgeForeground(
+    wallpaper: WallpaperConfig,
+    imageBitmap: ImageBitmap?,
+    screenWidthPx: Int,
+    screenHeightPx: Int,
+    edge: String
+): Color =
+    if (wallpaper.mode == "image" && imageBitmap != null && screenWidthPx > 0 && screenHeightPx > 0) {
+        sampleToolbarEdgeColor(imageBitmap, screenWidthPx, screenHeightPx, edge)
+    } else {
+        wallpaper.textColorAt(edge)
+    }
+
 fun sampleToolbarEdgeColor(
     bitmap: ImageBitmap,
     screenWidthPx: Int,

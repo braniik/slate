@@ -16,12 +16,12 @@ import com.braniik.slate.data.LocalWallpaperTextColor
 import com.braniik.slate.data.WallpaperConfig
 import com.braniik.slate.data.launcherSettingsFlow
 import com.braniik.slate.data.loadWallpaperBitmap
-import com.braniik.slate.data.sampleToolbarEdgeColor
+import com.braniik.slate.data.resolveEdgeForeground
 import com.braniik.slate.data.saveSettings
 import com.braniik.slate.data.textColor
-import com.braniik.slate.data.textColorAt
 import com.braniik.slate.data.wallpaperBackground
 import com.braniik.slate.data.wallpaperConfigFlow
+import com.braniik.slate.ui.SystemBarAppearance
 import com.braniik.slate.ui.drawer.AppDrawerScreen
 import com.braniik.slate.ui.setup.SetupScreen
 import com.braniik.slate.ui.theme.SlateTheme
@@ -57,13 +57,17 @@ fun SlateApp() {
     var screenSize by remember { mutableStateOf(IntSize.Zero) }
 
     val toolbarTextColor = remember(wallpaper, imageBitmap, toolbarPos, screenSize) {
-        if (wallpaper.mode == "image" && imageBitmap != null && screenSize.width > 0 && screenSize.height > 0
-        ) {
-            sampleToolbarEdgeColor(imageBitmap, screenSize.width, screenSize.height, toolbarPos)
-        } else {
-            wallpaper.textColorAt(toolbarPos)
-        }
+        resolveEdgeForeground(wallpaper, imageBitmap, screenSize.width, screenSize.height, toolbarPos)
     }
+
+    val statusBarForeground = remember(wallpaper, imageBitmap, screenSize) {
+        resolveEdgeForeground(wallpaper, imageBitmap, screenSize.width, screenSize.height, "top")
+    }
+    val navBarForeground = remember(wallpaper, imageBitmap, screenSize) {
+        resolveEdgeForeground(wallpaper, imageBitmap, screenSize.width, screenSize.height, "bottom")
+    }
+
+    SystemBarAppearance(statusBarForeground, navBarForeground)
 
     Box(
         modifier = Modifier

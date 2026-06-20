@@ -19,6 +19,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
@@ -38,6 +39,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -55,11 +57,13 @@ fun SlateSettingsSheet(
     layoutMode: String,
     listOrientation: String,
     toolbarPosition: String,
+    toolbarTitle: String,
     wallpaperConfig: WallpaperConfig,
     selectedIconPack: String,
     onSwitchMode: (String) -> Unit,
     onListOrientationChange: (String) -> Unit,
     onToolbarPositionChange: (String) -> Unit,
+    onToolbarTitleChange: (String) -> Unit,
     onIconPackChange: (String) -> Unit,
     onOpenWallpaperPicker: () -> Unit,
     onClose: () -> Unit
@@ -142,6 +146,16 @@ fun SlateSettingsSheet(
                 OrientationOption("right", "side strip", toolbarPosition == "right") {
                     onToolbarPositionChange("right")
                 }
+
+                Spacer(Modifier.height(24.dp))
+                SectionLabel("title")
+                Text(
+                    "shown in the toolbar",
+                    fontSize = 11.sp,
+                    color = SlateSubtle,
+                    modifier = Modifier.padding(bottom = 8.dp, start = 4.dp)
+                )
+                TitleField(toolbarTitle, onToolbarTitleChange)
 
                 Spacer(Modifier.height(24.dp))
                 SectionLabel("wallpaper")
@@ -275,6 +289,42 @@ private fun SwitchConfirmDialog(
                 Text("cancel", fontSize = 13.sp, color = SlateSubtle, letterSpacing = 2.sp)
             }
         }
+    }
+}
+
+@Composable
+private fun TitleField(value: String, onValueChange: (String) -> Unit) {
+    var text by remember { mutableStateOf(value) }
+
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(8.dp))
+            .background(SlateSubtle.copy(alpha = 0.3f))
+            .padding(horizontal = 14.dp, vertical = 14.dp)
+    ) {
+        BasicTextField(
+            value = text,
+            onValueChange = { new ->
+                text = new
+                onValueChange(new)
+            },
+            singleLine = true,
+            textStyle = TextStyle(color = SlateOnBackground, fontSize = 14.sp, letterSpacing = 1.sp),
+            cursorBrush = SolidColor(SlateOnBackground),
+            modifier = Modifier.fillMaxWidth(),
+            decorationBox = { inner ->
+                if (text.isEmpty()) {
+                    Text(
+                        "hidden",
+                        fontSize = 14.sp,
+                        color = SlateSubtle,
+                        letterSpacing = 1.sp
+                    )
+                }
+                inner()
+            }
+        )
     }
 }
 

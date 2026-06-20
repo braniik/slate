@@ -20,7 +20,9 @@ Coming soon.
 - **List mode:** Vertical or horizontal scrolling list. Drag-to-reorder in edit mode.
 - **Guide lines:** In edit mode, swipe from screen edges to create guide lines. Icons snap to guides and slide along them.
 - **Wallpapers:** Solid color, gradient (8 directions), or image. Auto-contrast text adapts to whatever you set.
+- **System bar contrast:** Status bar and navigation bar icons auto-adapt to the light/dark wallpapers, it is the same logic as toolbar.
 - **Toolbar position:** Snap the toolbar to any screen edge.
+- **Custom title:** Set your own toolbar title or leave it blank to hide it.
 - **Per-app customization:** Icon size, label visibility, text size (list mode), icon shape, rotation, all configurable per individual app.
 - **Icon shapes:** Round, square, squircle, hexagon, octagon. Pick per icon or blanket-set all at once.
 - **Icon rotation:** Rotate any icon from -360° to 360°. Shape rotates with the icon. Per-app or blanket-set.
@@ -64,14 +66,16 @@ git clone https://github.com/braniik/slate.git
 ## Project structure
 
 ```
-├── MainActivity.kt                — activity, edge-to-edge, wallpaper background
+├── MainActivity.kt                — activity, edge-to-edge, wallpaper background, system bar appearance
 ├── data/
 │   ├── GuideLine.kt               — guide line model, JSON serialization, DataStore persistence
 │   ├── IconPackManager.kt         — icon pack discovery, appfilter.xml parsing, icon resolution
 │   ├── LauncherPreferences.kt     — DataStore keys, HomeScreenApp model, settings flows
 │   ├── WallpaperConfig.kt         — wallpaper mode/colors/gradient, auto-contrast text color
-│   └── WallpaperImageStore.kt     — image save/load/compress, palette extraction
+│   ├── WallpaperImageStore.kt     — image save/load/compress, palette extraction
+│   └── WallpaperSampler.kt        — edge color resolution: image-strip sampling + shared light/dark resolver
 └── ui/
+    ├── SystemBars.kt               — status/navigation bar icon appearance (light vs dark)
     ├── drawer/
     │   ├── AddAppsOverlay.kt       — scrollable picker for adding apps to home
     │   ├── AppDrawerScreen.kt      — main state hub, wires all modes and dialogs together
@@ -91,7 +95,7 @@ git clone https://github.com/braniik/slate.git
     │   │   ├── HomeList.kt         — vertical/horizontal list with drag-to-reorder
     │   │   └── ListEditDialog.kt   — per-item text size, icon size, shape, rotation, icon toggle
     │   └── settings/
-    │       ├── SlateSettingsSheet.kt — layout mode switch, list orientation, toolbar position, wallpaper access, icon pack selection
+    │       ├── SlateSettingsSheet.kt — layout mode switch, list orientation, toolbar position, title, wallpaper access, icon pack selection
     │       └── WallpaperPicker.kt    — solid/gradient/image wallpaper configuration
     ├── setup/
     │   └── SetupScreen.kt          — first-launch layout picker

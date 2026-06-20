@@ -4,6 +4,7 @@ import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBarsPadding
@@ -36,6 +37,7 @@ internal fun Toolbar(
     mode: HomeMode,
     showSettings: Boolean,
     position: String,
+    title: String,
     onModeChange: (HomeMode) -> Unit,
     onSettingsToggle: () -> Unit,
     onBlanketSet: () -> Unit
@@ -43,9 +45,9 @@ internal fun Toolbar(
     val vertical = position == "left" || position == "right"
 
     if (vertical) {
-        VerticalToolbar(mode, showSettings, position, onModeChange, onSettingsToggle, onBlanketSet)
+        VerticalToolbar(mode, showSettings, position, title, onModeChange, onSettingsToggle, onBlanketSet)
     } else {
-        HorizontalToolbar(mode, showSettings, position, onModeChange, onSettingsToggle, onBlanketSet)
+        HorizontalToolbar(mode, showSettings, position, title, onModeChange, onSettingsToggle, onBlanketSet)
     }
 }
 
@@ -54,6 +56,7 @@ private fun HorizontalToolbar(
     mode: HomeMode,
     showSettings: Boolean,
     position: String,
+    title: String,
     onModeChange: (HomeMode) -> Unit,
     onSettingsToggle: () -> Unit,
     onBlanketSet: () -> Unit
@@ -70,13 +73,17 @@ private fun HorizontalToolbar(
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Text(
-            "slate",
-            fontSize = 18.sp,
-            fontWeight = FontWeight.Light,
-            color = textColor,
-            letterSpacing = 4.sp
-        )
+        if (title.isNotBlank()) {
+            Text(
+                title,
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Light,
+                color = textColor,
+                letterSpacing = 4.sp
+            )
+        } else {
+            Spacer(Modifier)
+        }
 
         Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
             ToolbarIcon(Icons.Filled.Settings, "settings", showSettings) {
@@ -105,6 +112,7 @@ private fun VerticalToolbar(
     mode: HomeMode,
     showSettings: Boolean,
     position: String,
+    title: String,
     onModeChange: (HomeMode) -> Unit,
     onSettingsToggle: () -> Unit,
     onBlanketSet: () -> Unit
@@ -121,14 +129,18 @@ private fun VerticalToolbar(
         verticalArrangement = Arrangement.SpaceBetween,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text(
-            "slate",
-            fontSize = 18.sp,
-            fontWeight = FontWeight.Light,
-            color = textColor,
-            letterSpacing = 4.sp,
-            modifier = Modifier.rotate(rotation)
-        )
+        if (title.isNotBlank()) {
+            Text(
+                title,
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Light,
+                color = textColor,
+                letterSpacing = 4.sp,
+                modifier = Modifier.rotate(rotation)
+            )
+        } else {
+            Spacer(Modifier)
+        }
 
         Column(
             verticalArrangement = Arrangement.spacedBy(4.dp),

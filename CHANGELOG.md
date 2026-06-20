@@ -1,5 +1,14 @@
 # Slate Changelog
 
+## 0.7.1  → 0.7.2
+
+**0.7.2** extends auto-contrast to the system bars and frees the toolbar title:
+
+- **System bar adaptation:** The status bar and navigation bar icons now follow the same wallpaper-aware contrast logic as the toolbar.
+- **Edge-anchored:** The status bar always samples the top of the screen and the navigation bar the bottom, regardless of where the toolbar is snapped, since the system bars stay fixed to those edges.
+- **Shared resolver:** Toolbar text and system bar icons now derive from one edge-color resolver, so they can't disagree.
+- **Customizable title:** The toolbar title is no longer hardcoded to "slate" as it used to be. Set your own text in settings under "title," or leave it empty to hide the title entirely.
+
 ## 0.7.0 → 0.7.1
  
 **0.7.1** fixes toolbar text contrast on image wallpapers:

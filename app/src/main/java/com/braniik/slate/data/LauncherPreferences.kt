@@ -19,6 +19,7 @@ object PreferenceKeys {
     val LAYOUT_MODE = stringPreferencesKey("layout_mode")
     val LIST_ORIENTATION = stringPreferencesKey("list_orientation")
     val TOOLBAR_POSITION = stringPreferencesKey("toolbar_position")
+    val TOOLBAR_TITLE = stringPreferencesKey("toolbar_title")
     val HOME_SCREEN_APPS = stringPreferencesKey("home_screen_apps")
     val WALLPAPER = stringPreferencesKey("wallpaper_config")
     val GUIDE_LINES = stringPreferencesKey("guide_lines")
@@ -29,7 +30,8 @@ data class LauncherSettings(
     val setupDone: Boolean = false,
     val layoutMode: String = "",
     val listOrientation: String = "vertical",
-    val toolbarPosition: String = "top"
+    val toolbarPosition: String = "top",
+    val toolbarTitle: String = "slate"
 )
 
 data class HomeScreenApp(
@@ -95,7 +97,8 @@ fun Context.launcherSettingsFlow(): Flow<LauncherSettings> =
             setupDone = prefs[PreferenceKeys.SETUP_DONE] ?: false,
             layoutMode = mode,
             listOrientation = prefs[PreferenceKeys.LIST_ORIENTATION] ?: "vertical",
-            toolbarPosition = prefs[PreferenceKeys.TOOLBAR_POSITION] ?: "top"
+            toolbarPosition = prefs[PreferenceKeys.TOOLBAR_POSITION] ?: "top",
+            toolbarTitle = prefs[PreferenceKeys.TOOLBAR_TITLE] ?: "slate"
         )
     }
 
@@ -133,6 +136,12 @@ suspend fun Context.saveListOrientation(orientation: String) {
 suspend fun Context.saveToolbarPosition(position: String) {
     dataStore.edit { prefs ->
         prefs[PreferenceKeys.TOOLBAR_POSITION] = position
+    }
+}
+
+suspend fun Context.saveToolbarTitle(title: String) {
+    dataStore.edit { prefs ->
+        prefs[PreferenceKeys.TOOLBAR_TITLE] = title
     }
 }
 
