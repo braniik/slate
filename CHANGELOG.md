@@ -1,5 +1,16 @@
 # Slate Changelog
 
+## 0.7.2 → 0.7.3
+ 
+**0.7.3** makes the system surfaces match Slate's wallpaper:
+ 
+- **Consistent Oveview:** Saving a wallpaper now also writes it to the real system wallpaper, so those surfaces match the home screen.
+- **Same pixels everywhere:** The system wallpaper is rendered from the very same config with the same gradient direction and the same image center-crop, so it is pixel-identical to what Slate paints.
+- **Home only, lock untouched:** Only the system (home/recents) wallpaper is set, your lock-screen wallpaper is left alone. (only so far)
+- **Shared gradient math:** Gradient direction now lives in one helper used by both the in-window background and the system-wallpaper renderer, so they can't drift apart.
+- **Fails safe:** If a locked-down ROM or work profile refuses the wallpaper write, Slate keeps its painted home background and simply skips the system update instead of crashing.
+
+
 ## 0.7.1  → 0.7.2
 
 **0.7.2** extends auto-contrast to the system bars and frees the toolbar title:
