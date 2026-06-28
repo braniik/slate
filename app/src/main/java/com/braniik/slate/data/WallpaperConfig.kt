@@ -142,15 +142,20 @@ private fun gradientFractionAt(screenEdge: String, gradientDirection: String): F
         else -> 0.5f
     }
 
-private fun directionOffsets(direction: String, size: Size): Pair<Offset, Offset> =
-    when (direction) {
-        "top_to_bottom" -> Offset(0f, 0f) to Offset(0f, size.height)
-        "bottom_to_top" -> Offset(0f, size.height) to Offset(0f, 0f)
-        "left_to_right" -> Offset(0f, 0f) to Offset(size.width, 0f)
-        "right_to_left" -> Offset(size.width, 0f) to Offset(0f, 0f)
-        "top_left_to_bottom_right" -> Offset(0f, 0f) to Offset(size.width, size.height)
-        "top_right_to_bottom_left" -> Offset(size.width, 0f) to Offset(0f, size.height)
-        "bottom_left_to_top_right" -> Offset(0f, size.height) to Offset(size.width, 0f)
-        "bottom_right_to_top_left" -> Offset(size.width, size.height) to Offset(0f, 0f)
-        else -> Offset(0f, 0f) to Offset(0f, size.height)
-    }
+fun gradientAxisFractions(direction: String): FloatArray = when (direction) {
+    "top_to_bottom" -> floatArrayOf(0f, 0f, 0f, 1f)
+    "bottom_to_top" -> floatArrayOf(0f, 1f, 0f, 0f)
+    "left_to_right" -> floatArrayOf(0f, 0f, 1f, 0f)
+    "right_to_left" -> floatArrayOf(1f, 0f, 0f, 0f)
+    "top_left_to_bottom_right" -> floatArrayOf(0f, 0f, 1f, 1f)
+    "top_right_to_bottom_left" -> floatArrayOf(1f, 0f, 0f, 1f)
+    "bottom_left_to_top_right" -> floatArrayOf(0f, 1f, 1f, 0f)
+    "bottom_right_to_top_left" -> floatArrayOf(1f, 1f, 0f, 0f)
+    else -> floatArrayOf(0f, 0f, 0f, 1f)
+}
+
+private fun directionOffsets(direction: String, size: Size): Pair<Offset, Offset> {
+    val f = gradientAxisFractions(direction)
+    return Offset(f[0] * size.width, f[1] * size.height) to
+            Offset(f[2] * size.width, f[3] * size.height)
+}

@@ -22,6 +22,7 @@ import com.braniik.slate.data.HomeScreenApp
 import com.braniik.slate.data.IconPackManager
 import com.braniik.slate.data.LauncherSettings
 import com.braniik.slate.data.WallpaperConfig
+import com.braniik.slate.data.applySystemWallpaper
 import com.braniik.slate.data.guideLinesFlow
 import com.braniik.slate.data.homeScreenAppsFlow
 import com.braniik.slate.data.iconPackFlow
@@ -228,7 +229,10 @@ fun AppDrawerScreen(settings: LauncherSettings) {
             WallpaperPicker(
                 current = wallpaperConfig,
                 onSave = { config ->
-                    scope.launch { context.saveWallpaperConfig(config) }
+                    scope.launch {
+                        context.saveWallpaperConfig(config)
+                        applySystemWallpaper(context, config)
+                    }
                     showWallpaperPicker = false
                 },
                 onDismiss = { showWallpaperPicker = false }
