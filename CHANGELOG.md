@@ -1,5 +1,17 @@
 # Slate Changelog
 
+## 0.7.3.1 → 0.7.4
+ 
+**0.7.4** brings no new features, the launcher just behaves like it should on real devices with real app counts.
+ 
+- **No more per-frame icon rendering:** Icons are rasterized exactly once when the app list loads, instead of allocating and redrawing a fresh bitmap on every recomposition.
+- **Cold start off the main thread:** Querying installed apps, loading their icons, parsing icon pack appfilter.xml, and decoding the image wallpaper all moved to a background thread. The UI no longer freezes on launch while PackageManager churns through 200 apps.
+- **Live app list:** Slate now listens for package install/update/removal broadcasts.
+- **Ghost entry pruning:** Uninstalling an app that was on your home screen now removes its stored entry instead of leaving invisible stale data in DataStore forever.
+- **Debug logging removed:** Leftover development logs stripped from the mode-switching path.
+- **Housekeeping:** versionCode now increments per release (required for F-Droid), and editor/LSP cache files are no longer tracked in git.
+
+
 ## 0.7.2 → 0.7.3
  
 **0.7.3** makes the system surfaces match Slate's wallpaper:

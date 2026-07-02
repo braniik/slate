@@ -7,6 +7,8 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -19,8 +21,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.braniik.slate.data.HomeScreenApp
-import com.braniik.slate.data.IconPackManager
 import com.braniik.slate.data.LauncherSettings
+import com.braniik.slate.data.packageChangesFlow
 import com.braniik.slate.data.WallpaperConfig
 import com.braniik.slate.data.applySystemWallpaper
 import com.braniik.slate.data.guideLinesFlow
@@ -51,12 +53,23 @@ fun AppDrawerScreen(settings: LauncherSettings) {
     val scope = rememberCoroutineScope()
 
     val selectedIconPack by context.iconPackFlow().collectAsState(initial = "")
-    val iconPackManager = remember(selectedIconPack) {
-        if (selectedIconPack.isNotBlank()) IconPackManager(context, selectedIconPack) else null
+    var packageGeneration by remember { mutableIntStateOf(0) }
+    LaunchedEffect(Unit) {
+        context.packageChangesFlow().collect { packageGeneration++ }
     }
-    val allApps = remember(iconPackManager) { loadApps(context, iconPackManager) }
+    var allApps by remember { mutableStateOf<List<AppInfo>?>(null) }
+    LaunchedEffect(selectedIconPack, packageGeneration) {
+        allApps = loadApps(context, selectedIconPack)
+    }
 
     val homeApps by context.homeScreenAppsFlow().collectAsState(initial = emptyList())
+
+    LaunchedEffect(allApps, homeApps) {
+        val installed = allApps?.mapTo(HashSet()) { it.packageName } ?: return@LaunchedEffect
+        val pruned = homeApps.filter { it.packageName in installed }
+        if (pruned.size != homeApps.size) context.saveHomeScreenApps(pruned)
+    }
+
     val wallpaperConfig by context.wallpaperConfigFlow().collectAsState(initial = WallpaperConfig())
     val guideLines by context.guideLinesFlow().collectAsState(initial = emptyList())
     var mode by remember { mutableStateOf(HomeMode.NORMAL) }
@@ -70,9 +83,7 @@ fun AppDrawerScreen(settings: LauncherSettings) {
     }
 
     fun switchMode(targetMode: String) {
-        android.util.Log.d("Slate", "switchMode called with: $targetMode")
         scope.launch {
-            android.util.Log.d("Slate", "coroutine entered, homeApps count: ${homeApps.size}")
             val resetApps = if (targetMode == "freescreen") {
                 homeApps.mapIndexed { i, app ->
                     val (x, y) = nextFreescreenPos(i)
@@ -81,13 +92,10 @@ fun AppDrawerScreen(settings: LauncherSettings) {
             } else {
                 homeApps.mapIndexed { i, app -> app.copy(order = i) }
             }
-            android.util.Log.d("Slate", "saving ${resetApps.size} apps, then mode=$targetMode")
             context.saveHomeScreenApps(resetApps)
             context.saveLayoutMode(targetMode)
-            android.util.Log.d("Slate", "save complete")
         }
         showSettings = false
-        android.util.Log.d("Slate", "showSettings set to false")
     }
 
     val pos = settings.toolbarPosition
@@ -132,11 +140,11 @@ fun AppDrawerScreen(settings: LauncherSettings) {
                     )
                 }
 
-                homeApps.isEmpty() && mode != HomeMode.ADDING -> EmptyState()
+                allApps != null && homeApps.isEmpty() && mode != HomeMode.ADDING -> EmptyState()
 
                 mode == HomeMode.ADDING -> {
                     val existing = homeApps.map { it.packageName }.toSet()
-                    val available = allApps.filter { it.packageName !in existing }
+                    val available = allApps.orEmpty().filter { it.packageName !in existing }
                     AddAppsOverlay(
                         apps = available,
                         onAdd = { info ->
@@ -156,7 +164,7 @@ fun AppDrawerScreen(settings: LauncherSettings) {
 
                 settings.layoutMode == "freescreen" -> HomeFreescreen(
                     homeApps = homeApps,
-                    allApps = allApps,
+                    allApps = allApps.orEmpty(),
                     mode = mode,
                     guideLines = guideLines,
                     onTap = { app -> handleAppTap(app, mode, context, homeApps, ::save) { editingPkg = it.packageName } },
@@ -174,7 +182,7 @@ fun AppDrawerScreen(settings: LauncherSettings) {
                     val sortedApps = homeApps.sortedBy { it.order }
                     HomeList(
                         homeApps = sortedApps,
-                        allApps = allApps,
+                        allApps = allApps.orEmpty(),
                         mode = mode,
                         horizontal = settings.listOrientation == "horizontal",
                         onTap = { app -> handleAppTap(app, mode, context, homeApps, ::save) { editingPkg = it.packageName } },
@@ -202,7 +210,7 @@ fun AppDrawerScreen(settings: LauncherSettings) {
 
         editingPkg?.let { pkg ->
             val app = homeApps.find { it.packageName == pkg } ?: run { editingPkg = null; return@let }
-            val info = allApps.find { it.packageName == pkg } ?: return@let
+            val info = allApps?.find { it.packageName == pkg } ?: return@let
             val onSave: (HomeScreenApp) -> Unit = { updated ->
                 save(homeApps.map { if (it.packageName == updated.packageName) updated else it })
                 editingPkg = null

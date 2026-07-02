@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.IntSize
@@ -25,7 +26,9 @@ import com.braniik.slate.ui.SystemBarAppearance
 import com.braniik.slate.ui.drawer.AppDrawerScreen
 import com.braniik.slate.ui.setup.SetupScreen
 import com.braniik.slate.ui.theme.SlateTheme
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -47,9 +50,10 @@ fun SlateApp() {
     val settings by context.launcherSettingsFlow().collectAsState(initial = null)
     val wallpaper by context.wallpaperConfigFlow().collectAsState(initial = WallpaperConfig())
 
-    val imageBitmap = remember(wallpaper.mode, wallpaper.imagePath) {
-        if (wallpaper.mode == "image" && wallpaper.imagePath.isNotBlank())
-            loadWallpaperBitmap(wallpaper.imagePath)
+    var imageBitmap by remember { mutableStateOf<ImageBitmap?>(null) }
+    LaunchedEffect(wallpaper.mode, wallpaper.imagePath) {
+        imageBitmap = if (wallpaper.mode == "image" && wallpaper.imagePath.isNotBlank())
+            withContext(Dispatchers.IO) { loadWallpaperBitmap(wallpaper.imagePath) }
         else null
     }
 

@@ -14,3 +14,9 @@
 .cxx
 local.properties
 *.apk
+
+kls_database.db
+
+/.idea/deploymentTargetSelector.xml
+/.idea/deviceManager.xml
+/.idea/runConfigurations.xml

@@ -7,13 +7,19 @@ import android.graphics.Canvas
 import android.graphics.Rect
 import android.graphics.drawable.AdaptiveIconDrawable
 import android.graphics.drawable.Drawable
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.core.graphics.drawable.toBitmap
 import com.braniik.slate.data.IconPackManager
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+
+private const val MAX_ICON_SIZE_DP = 96
 
 data class AppInfo(
     val label: String,
     val packageName: String,
-    val icon: Drawable
+    val icon: ImageBitmap
 )
 
 fun Drawable.toUnmaskedBitmap(sizePx: Int): Bitmap {
@@ -29,23 +35,27 @@ fun Drawable.toUnmaskedBitmap(sizePx: Int): Bitmap {
     return toBitmap(sizePx, sizePx)
 }
 
-fun loadApps(context: Context, iconPackManager: IconPackManager? = null): List<AppInfo> {
-    val intent = Intent(Intent.ACTION_MAIN).apply {
-        addCategory(Intent.CATEGORY_LAUNCHER)
-    }
-    return context.packageManager
-        .queryIntentActivities(intent, 0)
-        .sortedBy { it.loadLabel(context.packageManager).toString().lowercase() }
-        .map { info ->
-            val pkg = info.activityInfo.packageName
-            val icon = iconPackManager?.getIcon(pkg) ?: info.loadIcon(context.packageManager)
-            AppInfo(
-                label = info.loadLabel(context.packageManager).toString(),
-                packageName = pkg,
-                icon = icon
-            )
+suspend fun loadApps(context: Context, iconPackPackage: String): List<AppInfo> =
+    withContext(Dispatchers.IO) {
+        val iconPackManager =
+            if (iconPackPackage.isNotBlank()) IconPackManager(context, iconPackPackage) else null
+        val pm = context.packageManager
+        val iconSizePx = (MAX_ICON_SIZE_DP * context.resources.displayMetrics.density).toInt()
+        val intent = Intent(Intent.ACTION_MAIN).apply {
+            addCategory(Intent.CATEGORY_LAUNCHER)
         }
-}
+        pm.queryIntentActivities(intent, 0)
+            .map { info ->
+                val pkg = info.activityInfo.packageName
+                val drawable = iconPackManager?.getIcon(pkg) ?: info.loadIcon(pm)
+                AppInfo(
+                    label = info.loadLabel(pm).toString(),
+                    packageName = pkg,
+                    icon = drawable.toUnmaskedBitmap(iconSizePx).asImageBitmap()
+                )
+            }
+            .sortedBy { it.label.lowercase() }
+    }
 
 fun launchApp(context: Context, packageName: String) {
     context.packageManager.getLaunchIntentForPackage(packageName)?.let {

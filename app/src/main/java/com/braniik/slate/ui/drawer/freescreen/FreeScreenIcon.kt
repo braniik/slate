@@ -22,7 +22,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
-import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.style.TextOverflow
@@ -30,7 +29,6 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.braniik.slate.ui.drawer.toUnmaskedBitmap
 import com.braniik.slate.data.GuideLine
 import com.braniik.slate.data.GuideOrientation
 import com.braniik.slate.data.HomeScreenApp
@@ -171,13 +169,11 @@ internal fun FreescreenIcon(
             )
             .padding(PADDING_DP.dp)
     ) {
-        val iconSize = homeApp.iconSizeDp.dp
-        val density = LocalDensity.current
         Image(
-            bitmap = info.icon.toUnmaskedBitmap(with(density) { iconSize.toPx().toInt() }).asImageBitmap(),
+            bitmap = info.icon,
             contentDescription = info.label,
             modifier = Modifier
-                .size(iconSize)
+                .size(homeApp.iconSizeDp.dp)
                 .rotate(homeApp.rotationDeg)
                 .clip(iconShapeFor(homeApp.iconShape))
         )
