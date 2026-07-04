@@ -78,6 +78,8 @@ git clone https://github.com/braniik/slate.git
 │   ├── GuideLine.kt               — guide line model, JSON serialization, DataStore persistence
 │   ├── IconPackManager.kt         — icon pack discovery, appfilter.xml parsing, icon resolution
 │   ├── LauncherPreferences.kt     — DataStore keys, HomeScreenApp model, settings flows
+│   ├── PackageChanges.kt          — flow of app install/update/removal broadcasts
+│   ├── SystemWallpaperApplier.kt  — renders wallpaper config to the system wallpaper
 │   ├── WallpaperConfig.kt         — wallpaper mode/colors/gradient, auto-contrast text color
 │   ├── WallpaperImageStore.kt     — image save/load/compress, palette extraction
 │   └── WallpaperSampler.kt        — edge color resolution: image-strip sampling + shared light/dark resolver
@@ -85,8 +87,8 @@ git clone https://github.com/braniik/slate.git
     ├── SystemBars.kt               — status/navigation bar icon appearance (light vs dark)
     ├── drawer/
     │   ├── AddAppsOverlay.kt       — scrollable picker for adding apps to home
-    │   ├── AppDrawerScreen.kt      — main state hub, wires all modes and dialogs together
-    │   ├── AppLoader.kt            — queries PackageManager, unmasked adaptive icon rendering
+    │   ├── AppDrawerScreen.kt      — main state hub, wires modes and dialogs, reloads on package changes, prunes uninstalled apps
+    │   ├── AppLoader.kt            — async app query, one-time unmasked icon rasterization off the main thread
     │   ├── HomeMode.kt             — NORMAL, ADDING, EDITING, DELETING enum
     │   ├── Toolbar.kt              — position-aware toolbar
     │   ├── common/
