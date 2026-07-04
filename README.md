@@ -13,10 +13,12 @@ Freescreen mode is the centerpiece: your home screen is a blank **slate** where 
 ## Screenshots
 
 <p align="center">
-    <img width="486" height="1036" alt="Screenshot_20260704_085217" src="https://github.com/user-attachments/assets/119c57e3-af9a-4915-8b28-9b872272f736" />
-    <img width="490" height="1040" alt="Screenshot_20260704_091834" src="https://github.com/user-attachments/assets/0139dff8-d370-4f90-9ebb-262412a336b2" />
-    <img width="487" height="1033" alt="Screenshot_20260704_084615" src="https://github.com/user-attachments/assets/07593843-1059-4d08-973b-3f3d90afbba0" />
-    <img width="495" height="1036" alt="Screenshot_20260704_092240" src="https://github.com/user-attachments/assets/7bb6c226-3d9f-427f-a393-b5141d11aa60" />
+    <img width="40%" height="1036" alt="Screenshot_20260704_085217" src="https://github.com/user-attachments/assets/119c57e3-af9a-4915-8b28-9b872272f736" />
+    <img width="40%" height="1040" alt="Screenshot_20260704_091834" src="https://github.com/user-attachments/assets/0139dff8-d370-4f90-9ebb-262412a336b2" />
+</p>
+<p align="center">
+    <img width="40%" height="1033" alt="Screenshot_20260704_084615" src="https://github.com/user-attachments/assets/07593843-1059-4d08-973b-3f3d90afbba0" />
+    <img width="40%" height="1036" alt="Screenshot_20260704_092240" src="https://github.com/user-attachments/assets/7bb6c226-3d9f-427f-a393-b5141d11aa60" />
 </p>
 
 ## Features
