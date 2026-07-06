@@ -30,7 +30,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.braniik.slate.data.LocalToolbarTextColor
-import com.braniik.slate.ui.theme.SlateSubtle
 
 @Composable
 internal fun Toolbar(
@@ -174,9 +173,9 @@ private fun ToolbarIcon(
     active: Boolean,
     onClick: () -> Unit
 ) {
-    val activeColor = LocalToolbarTextColor.current
+    val foreground = LocalToolbarTextColor.current
     val tint by animateColorAsState(
-        if (active) activeColor else SlateSubtle,
+        if (active) foreground else foreground.copy(alpha = 0.55f),
         label = "toolbar_$label"
     )
     IconButton(onClick = onClick, modifier = Modifier.size(40.dp)) {

@@ -12,9 +12,6 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
 import org.json.JSONObject
 
-private val LightText = Color(0xFFFFFFFF)
-private val DarkText = Color(0xFF111111)
-
 val LocalWallpaperTextColor = compositionLocalOf { LightText }
 val LocalToolbarTextColor = compositionLocalOf { LightText }
 
@@ -103,8 +100,7 @@ private fun WallpaperConfig.textColorAtFraction(t: Float): Color {
         "gradient" -> lerpColor(Color(gradientStart), Color(gradientEnd), t)
         else -> Color(solidColor)
     }
-    val luminance = 0.299f * representative.red + 0.587f * representative.green + 0.114f * representative.blue
-    return if (luminance > 0.5f) DarkText else LightText
+    return foregroundFor(representative)
 }
 
 private fun lerpColor(a: Color, b: Color, t: Float): Color = Color(

@@ -3,9 +3,6 @@ package com.braniik.slate.data
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
 
-private val LightText = Color(0xFFFFFFFF)
-private val DarkText = Color(0xFF111111)
-
 fun resolveEdgeForeground(
     wallpaper: WallpaperConfig,
     imageBitmap: ImageBitmap?,
@@ -54,8 +51,7 @@ fun sampleToolbarEdgeColor(
     return try {
         val pixels = IntArray(cw * ch)
         bitmap.readPixels(pixels, cx, cy, cw, ch)
-        val luminance = averageLuminance(pixels)
-        if (luminance > 0.5f) DarkText else LightText
+        foregroundForLuminance(averageLuminance(pixels))
     } catch (_: Exception) {
         LightText
     }
@@ -64,11 +60,6 @@ fun sampleToolbarEdgeColor(
 private fun averageLuminance(pixels: IntArray): Float {
     if (pixels.isEmpty()) return 0f
     var sum = 0f
-    for (argb in pixels) {
-        val r = (argb shr 16 and 0xFF) / 255f
-        val g = (argb shr 8 and 0xFF) / 255f
-        val b = (argb and 0xFF) / 255f
-        sum += 0.299f * r + 0.587f * g + 0.114f * b
-    }
+    for (argb in pixels) sum += relativeLuminance(argb)
     return sum / pixels.size
 }

@@ -75,14 +75,15 @@ git clone https://github.com/braniik/slate.git
 ```
 ├── MainActivity.kt                — activity, edge-to-edge, wallpaper background, system bar appearance
 ├── data/
+│   ├── Contrast.kt                — WCAG relative luminance, the single light/dark foreground decision
 │   ├── GuideLine.kt               — guide line model, JSON serialization, DataStore persistence
 │   ├── IconPackManager.kt         — icon pack discovery, appfilter.xml parsing, icon resolution
 │   ├── LauncherPreferences.kt     — DataStore keys, HomeScreenApp model, settings flows
 │   ├── PackageChanges.kt          — flow of app install/update/removal broadcasts
 │   ├── SystemWallpaperApplier.kt  — renders wallpaper config to the system wallpaper
-│   ├── WallpaperConfig.kt         — wallpaper mode/colors/gradient, auto-contrast text color
+│   ├── WallpaperConfig.kt         — wallpaper mode/colors/gradient, per-edge text color for solid/gradient
 │   ├── WallpaperImageStore.kt     — image save/load/compress, palette extraction
-│   └── WallpaperSampler.kt        — edge color resolution: image-strip sampling + shared light/dark resolver
+│   └── WallpaperSampler.kt        — image wallpaper edge-strip sampling behind the toolbar and system bars
 └── ui/
     ├── SystemBars.kt               — status/navigation bar icon appearance (light vs dark)
     ├── drawer/

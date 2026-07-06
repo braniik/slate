@@ -1,5 +1,13 @@
 # Slate Changelog
 
+## 0.7.4 → 0.7.5
+ 
+**0.7.5** fixes toolbar visibility on mid-brightness warm wallpapers (the dark-on-brown bug):
+ 
+- **Perceptual luminance:** Light/dark foreground was decided by Rec. 601 luma computed on gamma-encoded sRGB with a 0.5 cutoff, which overestimates the brightness of mid-tone warm colors and flipped browns/tans to dark text too early. The decision now uses WCAG relative luminance (linearized sRGB, Rec. 709 weights) with the flip point at Y = 0.27.
+- **One contrast module:** The light-vs-dark decision, the text color constants, and the luminance math now live in a single `Contrast.kt`, shared by the edge sampler and the solid/gradient config path. Previously the same threshold logic and constants were duplicated in two files and could drift apart.
+- **Cheap per-pixel math:** Image-edge sampling linearizes pixels through a 256-entry lookup table, so the more correct math costs a table read per channel instead of three pow() calls per pixel.
+
 ## 0.7.3.1 → 0.7.4
  
 **0.7.4** brings no new features, the launcher just behaves like it should on real devices with real app counts.
@@ -11,7 +19,6 @@
 - **Debug logging removed:** Leftover development logs stripped from the mode-switching path.
 - **Housekeeping:** versionCode now increments per release (required for F-Droid), and editor/LSP cache files are no longer tracked in git.
 
-
 ## 0.7.2 → 0.7.3
  
 **0.7.3** makes the system surfaces match Slate's wallpaper:
@@ -21,7 +28,6 @@
 - **Home only, lock untouched:** Only the system (home/recents) wallpaper is set, your lock-screen wallpaper is left alone. (only so far)
 - **Shared gradient math:** Gradient direction now lives in one helper used by both the in-window background and the system-wallpaper renderer, so they can't drift apart.
 - **Fails safe:** If a locked-down ROM or work profile refuses the wallpaper write, Slate keeps its painted home background and simply skips the system update instead of crashing.
-
 
 ## 0.7.1  → 0.7.2
 
