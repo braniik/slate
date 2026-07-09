@@ -68,7 +68,7 @@ private fun HorizontalToolbar(
         modifier = Modifier
             .fillMaxWidth()
             .then(insets)
-            .padding(horizontal = 20.dp, vertical = 12.dp),
+            .padding(horizontal = 16.dp, vertical = 8.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -84,7 +84,7 @@ private fun HorizontalToolbar(
             Spacer(Modifier)
         }
 
-        Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+        Row {
             ToolbarIcon(Icons.Filled.Settings, "settings", showSettings) {
                 onSettingsToggle()
             }
@@ -124,7 +124,7 @@ private fun VerticalToolbar(
             .fillMaxHeight()
             .statusBarsPadding()
             .navigationBarsPadding()
-            .padding(horizontal = 8.dp, vertical = 16.dp),
+            .padding(horizontal = 4.dp, vertical = 12.dp),
         verticalArrangement = Arrangement.SpaceBetween,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
@@ -142,7 +142,6 @@ private fun VerticalToolbar(
         }
 
         Column(
-            verticalArrangement = Arrangement.spacedBy(4.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             ToolbarIcon(Icons.Filled.Settings, "settings", showSettings) {
@@ -178,7 +177,7 @@ private fun ToolbarIcon(
         if (active) foreground else foreground.copy(alpha = 0.55f),
         label = "toolbar_$label"
     )
-    IconButton(onClick = onClick, modifier = Modifier.size(40.dp)) {
+    IconButton(onClick = onClick, modifier = Modifier.size(48.dp)) {
         Icon(icon, contentDescription = label, tint = tint, modifier = Modifier.size(20.dp))
     }
 }

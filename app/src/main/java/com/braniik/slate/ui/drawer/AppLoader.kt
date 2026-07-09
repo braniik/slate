@@ -56,10 +56,3 @@ suspend fun loadApps(context: Context, iconPackPackage: String): List<AppInfo> =
             }
             .sortedBy { it.label.lowercase() }
     }
-
-fun launchApp(context: Context, packageName: String) {
-    context.packageManager.getLaunchIntentForPackage(packageName)?.let {
-        it.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-        context.startActivity(it)
-    }
-}

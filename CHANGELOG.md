@@ -1,5 +1,16 @@
 # Slate Changelog
 
+## 0.7.5 → 0.7.6
+ 
+**0.7.6** features a lot of fixes:
+ 
+- **Home button resets state:** The manifest declared `singleTask` but nothing handled the re-delivered intent, so pressing home while adding, editing, or sitting in settings left you exactly where you were.
+- **Back closes things:** A single BackHandler turns off the topmost layer per press: wallpaper picker → blanket-set → edit dialog → settings → active mode. On the bare home screen back deliberately does nothing.
+- **Long-press → App Info:** Long-press any home screen icon (normal mode, both layouts) to open the system App Info sheet for uninstall, force stop, and permissions.
+- **48dp touch targets:** Toolbar buttons and dialog close buttons grew from 40/36/32dp to the Android accessibility minimum of 48dp. 
+- **One state owner:** The five scattered overlay/mode flags in AppDrawerScreen moved into `HomeUiState`, which owns exactly two transitions: `dismissTopmost()` (back) and `reset()` (home). The overlay layer order is now written down in one place instead of implied across a 280-line composable.
+- **Loader/actions split:** `launchApp` moved out of AppLoader into a new `AppActions.kt` next to `openAppInfo`. AppLoader lists apps; AppActions acts on them.
+
 ## 0.7.4 → 0.7.5
  
 **0.7.5** fixes toolbar visibility on mid-brightness warm wallpapers (the dark-on-brown bug):

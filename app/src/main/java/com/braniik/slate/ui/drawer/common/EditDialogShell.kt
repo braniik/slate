@@ -76,7 +76,7 @@ fun EditDialogShell(
                     overflow = TextOverflow.Ellipsis,
                     modifier = Modifier.weight(1f)
                 )
-                IconButton(onClick = onDismiss, modifier = Modifier.size(32.dp)) {
+                IconButton(onClick = onDismiss, modifier = Modifier.size(48.dp)) {
                     Icon(Icons.Filled.Close, "close", tint = SlateSubtle, modifier = Modifier.size(16.dp))
                 }
             }

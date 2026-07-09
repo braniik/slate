@@ -55,6 +55,7 @@ fun HomeList(
     mode: HomeMode,
     horizontal: Boolean,
     onTap: (HomeScreenApp) -> Unit,
+    onLongPress: (HomeScreenApp) -> Unit = {},
     onReorder: (List<HomeScreenApp>) -> Unit = {}
 ) {
     val canDrag = mode == HomeMode.EDITING
@@ -128,6 +129,7 @@ fun HomeList(
                     mode = mode,
                     dragOffsetPx = if (isDragged) dragOffsetPx else 0f,
                     onTap = onTap,
+                    onLongPress = onLongPress,
                     onDragStart = { dragIndex = index; dragOffsetPx = 0f },
                     onDrag = { delta -> dragOffsetPx += delta; trySwap() },
                     onDragEnd = commitDrag,
@@ -155,6 +157,7 @@ fun HomeList(
                     mode = mode,
                     dragOffsetPx = if (isDragged) dragOffsetPx else 0f,
                     onTap = onTap,
+                    onLongPress = onLongPress,
                     onDragStart = { dragIndex = index; dragOffsetPx = 0f },
                     onDrag = { delta -> dragOffsetPx += delta; trySwap() },
                     onDragEnd = commitDrag,
@@ -174,6 +177,7 @@ private fun VerticalListItem(
     mode: HomeMode,
     dragOffsetPx: Float,
     onTap: (HomeScreenApp) -> Unit,
+    onLongPress: (HomeScreenApp) -> Unit,
     onDragStart: () -> Unit,
     onDrag: (Float) -> Unit,
     onDragEnd: () -> Unit,
@@ -191,7 +195,10 @@ private fun VerticalListItem(
             .then(deleteBorder(mode))
             .offset { IntOffset(0, dragOffsetPx.toInt()) }
             .pointerInput(homeApp.packageName) {
-                detectTapGestures { onTap(homeApp) }
+                detectTapGestures(
+                    onLongPress = { onLongPress(homeApp) },
+                    onTap = { onTap(homeApp) }
+                )
             }
             .then(
                 if (canDrag) {
@@ -241,6 +248,7 @@ private fun HorizontalListItem(
     mode: HomeMode,
     dragOffsetPx: Float,
     onTap: (HomeScreenApp) -> Unit,
+    onLongPress: (HomeScreenApp) -> Unit,
     onDragStart: () -> Unit,
     onDrag: (Float) -> Unit,
     onDragEnd: () -> Unit,
@@ -260,7 +268,10 @@ private fun HorizontalListItem(
             .then(deleteBorder(mode))
             .offset { IntOffset(dragOffsetPx.toInt(), 0) }
             .pointerInput(homeApp.packageName) {
-                detectTapGestures { onTap(homeApp) }
+                detectTapGestures(
+                    onLongPress = { onLongPress(homeApp) },
+                    onTap = { onTap(homeApp) }
+                )
             }
             .then(
                 if (canDrag) {

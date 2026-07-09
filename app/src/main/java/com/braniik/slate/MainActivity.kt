@@ -1,5 +1,6 @@
 package com.braniik.slate
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -31,19 +32,27 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 class MainActivity : ComponentActivity() {
+
+    private val homeResetSignal = mutableIntStateOf(0)
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
             SlateTheme {
-                SlateApp()
+                SlateApp(homeResetSignal.intValue)
             }
         }
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        homeResetSignal.intValue++
     }
 }
 
 @Composable
-fun SlateApp() {
+fun SlateApp(homeResetSignal: Int) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
 
@@ -93,7 +102,10 @@ fun SlateApp() {
                     }
                 }
                 else -> {
-                    AppDrawerScreen(settings = settings!!)
+                    AppDrawerScreen(
+                        settings = settings!!,
+                        homeResetSignal = homeResetSignal
+                    )
                 }
             }
         }

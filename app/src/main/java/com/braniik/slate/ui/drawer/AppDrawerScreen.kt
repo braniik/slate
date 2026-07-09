@@ -1,5 +1,6 @@
 package com.braniik.slate.ui.drawer
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -48,7 +49,10 @@ import com.braniik.slate.ui.theme.SlateSubtle
 import kotlinx.coroutines.launch
 
 @Composable
-fun AppDrawerScreen(settings: LauncherSettings) {
+fun AppDrawerScreen(
+    settings: LauncherSettings,
+    homeResetSignal: Int = 0
+) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
 
@@ -72,11 +76,13 @@ fun AppDrawerScreen(settings: LauncherSettings) {
 
     val wallpaperConfig by context.wallpaperConfigFlow().collectAsState(initial = WallpaperConfig())
     val guideLines by context.guideLinesFlow().collectAsState(initial = emptyList())
-    var mode by remember { mutableStateOf(HomeMode.NORMAL) }
-    var editingPkg by remember { mutableStateOf<String?>(null) }
-    var showSettings by remember { mutableStateOf(false) }
-    var showBlanketSet by remember { mutableStateOf(false) }
-    var showWallpaperPicker by remember { mutableStateOf(false) }
+    val ui = rememberHomeUiState()
+
+    LaunchedEffect(homeResetSignal) {
+        if (homeResetSignal > 0) ui.reset()
+    }
+
+    BackHandler { ui.dismissTopmost() }
 
     fun save(apps: List<HomeScreenApp>) {
         scope.launch { context.saveHomeScreenApps(apps) }
@@ -95,7 +101,11 @@ fun AppDrawerScreen(settings: LauncherSettings) {
             context.saveHomeScreenApps(resetApps)
             context.saveLayoutMode(targetMode)
         }
-        showSettings = false
+        ui.showSettings = false
+    }
+
+    val onLongPress: (HomeScreenApp) -> Unit = { app ->
+        if (ui.mode == HomeMode.NORMAL) openAppInfo(context, app.packageName)
     }
 
     val pos = settings.toolbarPosition
@@ -103,26 +113,26 @@ fun AppDrawerScreen(settings: LauncherSettings) {
 
     val toolbar: @Composable () -> Unit = {
         Toolbar(
-            mode = mode,
-            showSettings = showSettings,
+            mode = ui.mode,
+            showSettings = ui.showSettings,
             position = pos,
             title = settings.toolbarTitle,
             onModeChange = { newMode ->
-                showSettings = false
-                mode = if (mode == newMode) HomeMode.NORMAL else newMode
+                ui.showSettings = false
+                ui.mode = if (ui.mode == newMode) HomeMode.NORMAL else newMode
             },
             onSettingsToggle = {
-                showSettings = !showSettings
-                if (showSettings) mode = HomeMode.NORMAL
+                ui.showSettings = !ui.showSettings
+                if (ui.showSettings) ui.mode = HomeMode.NORMAL
             },
-            onBlanketSet = { showBlanketSet = true }
+            onBlanketSet = { ui.showBlanketSet = true }
         )
     }
 
     val content: @Composable (Modifier) -> Unit = { modifier ->
         Box(modifier = modifier) {
             when {
-                showSettings -> {
+                ui.showSettings -> {
                     SlateSettingsSheet(
                         layoutMode = settings.layoutMode,
                         listOrientation = settings.listOrientation,
@@ -135,14 +145,14 @@ fun AppDrawerScreen(settings: LauncherSettings) {
                         onToolbarPositionChange = { scope.launch { context.saveToolbarPosition(it) } },
                         onToolbarTitleChange = { scope.launch { context.saveToolbarTitle(it) } },
                         onIconPackChange = { scope.launch { context.saveIconPack(it) } },
-                        onOpenWallpaperPicker = { showWallpaperPicker = true },
-                        onClose = { showSettings = false }
+                        onOpenWallpaperPicker = { ui.showWallpaperPicker = true },
+                        onClose = { ui.showSettings = false }
                     )
                 }
 
-                allApps != null && homeApps.isEmpty() && mode != HomeMode.ADDING -> EmptyState()
+                allApps != null && homeApps.isEmpty() && ui.mode != HomeMode.ADDING -> EmptyState()
 
-                mode == HomeMode.ADDING -> {
+                ui.mode == HomeMode.ADDING -> {
                     val existing = homeApps.map { it.packageName }.toSet()
                     val available = allApps.orEmpty().filter { it.packageName !in existing }
                     AddAppsOverlay(
@@ -158,16 +168,17 @@ fun AppDrawerScreen(settings: LauncherSettings) {
                                 )
                             )
                         },
-                        onClose = { mode = HomeMode.NORMAL }
+                        onClose = { ui.mode = HomeMode.NORMAL }
                     )
                 }
 
                 settings.layoutMode == "freescreen" -> HomeFreescreen(
                     homeApps = homeApps,
                     allApps = allApps.orEmpty(),
-                    mode = mode,
+                    mode = ui.mode,
                     guideLines = guideLines,
-                    onTap = { app -> handleAppTap(app, mode, context, homeApps, ::save) { editingPkg = it.packageName } },
+                    onTap = { app -> handleAppTap(app, ui.mode, context, homeApps, ::save) { ui.editingPkg = it.packageName } },
+                    onLongPress = onLongPress,
                     onPositionChanged = { app, newX, newY ->
                         save(homeApps.map {
                             if (it.packageName == app.packageName) it.copy(xPos = newX, yPos = newY) else it
@@ -183,9 +194,10 @@ fun AppDrawerScreen(settings: LauncherSettings) {
                     HomeList(
                         homeApps = sortedApps,
                         allApps = allApps.orEmpty(),
-                        mode = mode,
+                        mode = ui.mode,
                         horizontal = settings.listOrientation == "horizontal",
-                        onTap = { app -> handleAppTap(app, mode, context, homeApps, ::save) { editingPkg = it.packageName } },
+                        onTap = { app -> handleAppTap(app, ui.mode, context, homeApps, ::save) { ui.editingPkg = it.packageName } },
+                        onLongPress = onLongPress,
                         onReorder = ::save
                     )
                 }
@@ -208,32 +220,32 @@ fun AppDrawerScreen(settings: LauncherSettings) {
             }
         }
 
-        editingPkg?.let { pkg ->
-            val app = homeApps.find { it.packageName == pkg } ?: run { editingPkg = null; return@let }
+        ui.editingPkg?.let { pkg ->
+            val app = homeApps.find { it.packageName == pkg } ?: run { ui.editingPkg = null; return@let }
             val info = allApps?.find { it.packageName == pkg } ?: return@let
             val onSave: (HomeScreenApp) -> Unit = { updated ->
                 save(homeApps.map { if (it.packageName == updated.packageName) updated else it })
-                editingPkg = null
+                ui.editingPkg = null
             }
             if (settings.layoutMode == "freescreen") {
-                FreescreenEditDialog(app, info, onDismiss = { editingPkg = null }, onSave = onSave)
+                FreescreenEditDialog(app, info, onDismiss = { ui.editingPkg = null }, onSave = onSave)
             } else {
-                ListEditDialog(app, info, onDismiss = { editingPkg = null }, onSave = onSave)
+                ListEditDialog(app, info, onDismiss = { ui.editingPkg = null }, onSave = onSave)
             }
         }
 
-        if (showBlanketSet) {
+        if (ui.showBlanketSet) {
             BlanketSetDialog(
                 isFreescreen = settings.layoutMode == "freescreen",
-                onDismiss = { showBlanketSet = false },
+                onDismiss = { ui.showBlanketSet = false },
                 onApply = { transform ->
                     save(homeApps.map { it.transform() })
-                    showBlanketSet = false
+                    ui.showBlanketSet = false
                 }
             )
         }
 
-        if (showWallpaperPicker) {
+        if (ui.showWallpaperPicker) {
             WallpaperPicker(
                 current = wallpaperConfig,
                 onSave = { config ->
@@ -241,9 +253,9 @@ fun AppDrawerScreen(settings: LauncherSettings) {
                         context.saveWallpaperConfig(config)
                         applySystemWallpaper(context, config)
                     }
-                    showWallpaperPicker = false
+                    ui.showWallpaperPicker = false
                 },
-                onDismiss = { showWallpaperPicker = false }
+                onDismiss = { ui.showWallpaperPicker = false }
             )
         }
     }

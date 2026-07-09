@@ -22,6 +22,7 @@ fun HomeFreescreen(
     mode: HomeMode,
     guideLines: List<GuideLine>,
     onTap: (HomeScreenApp) -> Unit,
+    onLongPress: (HomeScreenApp) -> Unit = {},
     onPositionChanged: (HomeScreenApp, Float, Float) -> Unit,
     onGuidesChanged: (List<GuideLine>) -> Unit
 ) {
@@ -49,6 +50,7 @@ fun HomeFreescreen(
                 mode = mode,
                 guideLines = guideLines,
                 onTap = { onTap(homeApp) },
+                onLongPress = { onLongPress(homeApp) },
                 onPositionChanged = { x, y -> onPositionChanged(homeApp, x, y) }
             )
         }

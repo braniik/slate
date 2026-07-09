@@ -81,7 +81,7 @@ fun SlateSettingsSheet(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text("settings", fontSize = 14.sp, color = SlateSubtle, letterSpacing = 2.sp)
-                IconButton(onClick = onClose, modifier = Modifier.size(36.dp)) {
+                IconButton(onClick = onClose, modifier = Modifier.size(48.dp)) {
                     Icon(Icons.Filled.Close, "close", tint = SlateSubtle, modifier = Modifier.size(18.dp))
                 }
             }

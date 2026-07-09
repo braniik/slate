@@ -51,6 +51,7 @@ internal fun FreescreenIcon(
     mode: HomeMode,
     guideLines: List<GuideLine> = emptyList(),
     onTap: () -> Unit,
+    onLongPress: () -> Unit = {},
     onPositionChanged: (Float, Float) -> Unit
 ) {
     val density = LocalDensity.current
@@ -88,7 +89,10 @@ internal fun FreescreenIcon(
                 } else Modifier
             )
             .pointerInput(homeApp.packageName) {
-                detectTapGestures { onTap() }
+                detectTapGestures(
+                    onLongPress = { onLongPress() },
+                    onTap = { onTap() }
+                )
             }
             .then(
                 if (canDrag) {

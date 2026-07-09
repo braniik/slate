@@ -73,7 +73,7 @@ git clone https://github.com/braniik/slate.git
 ## Project structure
 
 ```
-├── MainActivity.kt                — activity, edge-to-edge, wallpaper background, system bar appearance
+├── MainActivity.kt                — activity, edge-to-edge, wallpaper background, system bar appearance, home-intent reset signal
 ├── data/
 │   ├── Contrast.kt                — WCAG relative luminance, the single light/dark foreground decision
 │   ├── GuideLine.kt               — guide line model, JSON serialization, DataStore persistence
@@ -88,9 +88,11 @@ git clone https://github.com/braniik/slate.git
     ├── SystemBars.kt               — status/navigation bar icon appearance (light vs dark)
     ├── drawer/
     │   ├── AddAppsOverlay.kt       — scrollable picker for adding apps to home
-    │   ├── AppDrawerScreen.kt      — main state hub, wires modes and dialogs, reloads on package changes, prunes uninstalled apps
+    │   ├── AppActions.kt           — acting on apps: launch, open the system App Info sheet
+    │   ├── AppDrawerScreen.kt      — wires modes, dialogs, back handling, home reset, reloads on pack
     │   ├── AppLoader.kt            — async app query, one-time unmasked icon rasterization off the main thread
     │   ├── HomeMode.kt             — NORMAL, ADDING, EDITING, DELETING enum
+    │   ├── HomeUiState.kt          — ephemeral mode/overlay state, its two transitions: back (peel topmost) and home (reset)
     │   ├── Toolbar.kt              — position-aware toolbar
     │   ├── common/
     │   │   ├── BlanketSetDialog.kt — bulk-set icon size/shape/rotation/labels for all apps
