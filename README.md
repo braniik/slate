@@ -134,6 +134,6 @@ git clone https://github.com/braniik/slate.git
 - [x] 0.6 — Icon pack support
 - [x] 0.6.1 — Icon rotation
 - [x] 0.7 — Polish and refinement
-- [x] 0.8 — Production readiness
+- [ ] 0.8 — Production readiness
 - [ ] 1.0 — F-Droid release (and other stores, if Android stays open)
 
