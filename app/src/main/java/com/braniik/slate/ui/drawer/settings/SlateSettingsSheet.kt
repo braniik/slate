@@ -21,6 +21,8 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.verticalScroll
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.Icon
@@ -45,6 +47,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.braniik.slate.data.WallpaperConfig
 import com.braniik.slate.data.discoverIconPacks
+import com.braniik.slate.data.isDefaultLauncher
+import com.braniik.slate.data.requestDefaultLauncherIntent
 import com.braniik.slate.data.loadWallpaperBitmap
 import com.braniik.slate.ui.theme.SlateDanger
 import com.braniik.slate.ui.theme.SlateOnBackground
@@ -182,9 +186,51 @@ fun SlateSettingsSheet(
                 }
 
                 Spacer(Modifier.height(24.dp))
-                SectionLabel("icon pack")
+                SectionLabel("default launcher")
 
                 val context = LocalContext.current
+                var isDefault by remember { mutableStateOf(isDefaultLauncher(context)) }
+                val roleRequest = rememberLauncherForActivityResult(
+                    ActivityResultContracts.StartActivityForResult()
+                ) { isDefault = isDefaultLauncher(context) }
+
+                if (isDefault) {
+                    Text(
+                        "slate is your default home app",
+                        fontSize = 11.sp,
+                        color = SlateSubtle,
+                        modifier = Modifier.padding(vertical = 8.dp, horizontal = 4.dp)
+                    )
+                } else {
+                    Text(
+                        "pressing home won't open slate until it's the default",
+                        fontSize = 11.sp,
+                        color = SlateSubtle,
+                        modifier = Modifier.padding(bottom = 8.dp, start = 4.dp)
+                    )
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(SlateSubtle.copy(alpha = 0.3f))
+                            .clickable {
+                                requestDefaultLauncherIntent(context)?.let { roleRequest.launch(it) }
+                            }
+                            .padding(vertical = 14.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            "set as default",
+                            fontSize = 13.sp,
+                            color = SlateOnBackground,
+                            letterSpacing = 1.sp
+                        )
+                    }
+                }
+
+                Spacer(Modifier.height(24.dp))
+                SectionLabel("icon pack")
+
                 val iconPacks = remember { discoverIconPacks(context) }
 
                 OrientationOption(

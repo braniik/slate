@@ -11,6 +11,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.unit.IntSize
 import com.braniik.slate.data.GuideLine
+import com.braniik.slate.data.key
 import com.braniik.slate.data.HomeScreenApp
 import com.braniik.slate.ui.drawer.AppInfo
 import com.braniik.slate.ui.drawer.HomeMode
@@ -42,7 +43,7 @@ fun HomeFreescreen(
         }
 
         homeApps.forEach { homeApp ->
-            val info = allApps.find { it.packageName == homeApp.packageName } ?: return@forEach
+            val info = allApps.find { it.key == homeApp.key } ?: return@forEach
             FreescreenIcon(
                 homeApp = homeApp,
                 info = info,

@@ -15,8 +15,8 @@ android {
         applicationId = "com.braniik.slate"
         minSdk = 29
         targetSdk = 36
-        versionCode = 4
-        versionName = "0.7.6"
+        versionCode = 5
+        versionName = "0.8"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }

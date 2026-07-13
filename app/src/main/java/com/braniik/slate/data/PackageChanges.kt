@@ -1,32 +1,30 @@
 package com.braniik.slate.data
 
-import android.content.BroadcastReceiver
 import android.content.Context
-import android.content.Intent
-import android.content.IntentFilter
-import androidx.core.content.ContextCompat
+import android.content.pm.LauncherApps
+import android.os.Handler
+import android.os.Looper
+import android.os.UserHandle
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 
 fun Context.packageChangesFlow(): Flow<Unit> = callbackFlow {
-    val receiver = object : BroadcastReceiver() {
-        override fun onReceive(context: Context?, intent: Intent?) {
-            trySend(Unit)
-        }
+    val launcherApps = getSystemService(LauncherApps::class.java)
+        ?: run { close(); return@callbackFlow }
+
+    val callback = object : LauncherApps.Callback() {
+        override fun onPackageAdded(packageName: String?, user: UserHandle?) { trySend(Unit) }
+        override fun onPackageRemoved(packageName: String?, user: UserHandle?) { trySend(Unit) }
+        override fun onPackageChanged(packageName: String?, user: UserHandle?) { trySend(Unit) }
+        override fun onPackagesAvailable(
+            packageNames: Array<out String>?, user: UserHandle?, replacing: Boolean
+        ) { trySend(Unit) }
+        override fun onPackagesUnavailable(
+            packageNames: Array<out String>?, user: UserHandle?, replacing: Boolean
+        ) { trySend(Unit) }
     }
-    val filter = IntentFilter().apply {
-        addAction(Intent.ACTION_PACKAGE_ADDED)
-        addAction(Intent.ACTION_PACKAGE_REMOVED)
-        addAction(Intent.ACTION_PACKAGE_CHANGED)
-        addAction(Intent.ACTION_PACKAGE_REPLACED)
-        addDataScheme("package")
-    }
-    ContextCompat.registerReceiver(
-        this@packageChangesFlow,
-        receiver,
-        filter,
-        ContextCompat.RECEIVER_NOT_EXPORTED
-    )
-    awaitClose { unregisterReceiver(receiver) }
+
+    launcherApps.registerCallback(callback, Handler(Looper.getMainLooper()))
+    awaitClose { launcherApps.unregisterCallback(callback) }
 }

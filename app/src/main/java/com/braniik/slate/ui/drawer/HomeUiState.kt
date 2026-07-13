@@ -17,13 +17,13 @@ class HomeUiState {
     var showSettings by mutableStateOf(false)
     var showBlanketSet by mutableStateOf(false)
     var showWallpaperPicker by mutableStateOf(false)
-    var editingPkg by mutableStateOf<String?>(null)
+    var editingKey by mutableStateOf<String?>(null)
 
     fun dismissTopmost() {
         when {
             showWallpaperPicker -> showWallpaperPicker = false
             showBlanketSet -> showBlanketSet = false
-            editingPkg != null -> editingPkg = null
+            editingKey != null -> editingKey = null
             showSettings -> showSettings = false
             mode != HomeMode.NORMAL -> mode = HomeMode.NORMAL
         }
@@ -32,7 +32,7 @@ class HomeUiState {
     fun reset() {
         showWallpaperPicker = false
         showBlanketSet = false
-        editingPkg = null
+        editingKey = null
         showSettings = false
         mode = HomeMode.NORMAL
     }

@@ -42,6 +42,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import com.braniik.slate.data.HomeScreenApp
+import com.braniik.slate.data.key
 import com.braniik.slate.data.LocalWallpaperTextColor
 import com.braniik.slate.ui.drawer.AppInfo
 import com.braniik.slate.ui.drawer.HomeMode
@@ -119,8 +120,8 @@ fun HomeList(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.fillMaxSize()
         ) {
-            itemsIndexed(items, key = { _, app -> app.packageName }) { index, homeApp ->
-                val info = allApps.find { it.packageName == homeApp.packageName }
+            itemsIndexed(items, key = { _, app -> app.key }) { index, homeApp ->
+                val info = allApps.find { it.key == homeApp.key }
                     ?: return@itemsIndexed
                 val isDragged = index == dragIndex
                 HorizontalListItem(
@@ -147,8 +148,8 @@ fun HomeList(
             verticalArrangement = Arrangement.spacedBy(2.dp),
             modifier = Modifier.fillMaxSize()
         ) {
-            itemsIndexed(items, key = { _, app -> app.packageName }) { index, homeApp ->
-                val info = allApps.find { it.packageName == homeApp.packageName }
+            itemsIndexed(items, key = { _, app -> app.key }) { index, homeApp ->
+                val info = allApps.find { it.key == homeApp.key }
                     ?: return@itemsIndexed
                 val isDragged = index == dragIndex
                 VerticalListItem(
@@ -194,7 +195,7 @@ private fun VerticalListItem(
             .fillMaxWidth()
             .then(deleteBorder(mode))
             .offset { IntOffset(0, dragOffsetPx.toInt()) }
-            .pointerInput(homeApp.packageName) {
+            .pointerInput(homeApp.key) {
                 detectTapGestures(
                     onLongPress = { onLongPress(homeApp) },
                     onTap = { onTap(homeApp) }
@@ -202,7 +203,7 @@ private fun VerticalListItem(
             }
             .then(
                 if (canDrag) {
-                    Modifier.pointerInput(homeApp.packageName) {
+                    Modifier.pointerInput(homeApp.key) {
                         detectDragGestures(
                             onDragStart = { currentOnDragStart() },
                             onDrag = { change, amount ->
@@ -267,7 +268,7 @@ private fun HorizontalListItem(
         modifier = modifier
             .then(deleteBorder(mode))
             .offset { IntOffset(dragOffsetPx.toInt(), 0) }
-            .pointerInput(homeApp.packageName) {
+            .pointerInput(homeApp.key) {
                 detectTapGestures(
                     onLongPress = { onLongPress(homeApp) },
                     onTap = { onTap(homeApp) }
@@ -275,7 +276,7 @@ private fun HorizontalListItem(
             }
             .then(
                 if (canDrag) {
-                    Modifier.pointerInput(homeApp.packageName) {
+                    Modifier.pointerInput(homeApp.key) {
                         detectDragGestures(
                             onDragStart = { currentOnDragStart() },
                             onDrag = { change, amount ->

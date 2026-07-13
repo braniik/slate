@@ -1,0 +1,6 @@
+0.8 is production polish for the F-Droid release:
+ 
+• Work profile support: apps from managed profiles (Shelter, Island) now appear in the app list with the system work badge, can be placed and launched like any other app.
+• "Set as default launcher" prompt in settings.
+• Package changes in work profiles (including profile freeze/unfreeze) refresh the app list live.
+

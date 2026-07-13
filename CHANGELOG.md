@@ -1,5 +1,16 @@
 # Slate Changelog
 
+## 0.7.6 → 0.8.0
+ 
+**0.8.0** is the production-readiness release
+ 
+- **Work profile support:** App loading migrated from `PackageManager.queryIntentActivities` to the `LauncherApps` API, so apps in managed profiles (Shelter, Island) now show up, badged with the system work indicator. 
+- **Profile-aware launching:** Apps launch and open their App Info page via `LauncherApps` with the correct user handle, so work apps launch into the work profile.
+- **Live profile events:** Package change tracking migrated from broadcasts to `LauncherApps.Callback`, which also fires for work-profile installs/removals and profile availability (freeze/unfreeze).
+- **Set as default launcher:** Settings now has a "default launcher" section using `RoleManager.createRequestRoleIntent(ROLE_HOME)`.
+- **F-Droid metadata:** Fastlane structure added (`fastlane/metadata/android/en-US/`) with title, short/full descriptions, and per-versionCode changelogs. Screenshots go in `images/phoneScreenshots/`.
+- Known limitation, deliberately deferred: swipe-down-for-notification-shade. There is no public API for it, peers use the hidden `expandNotificationsPanel` via reflection. 
+
 ## 0.7.5 → 0.7.6
  
 **0.7.6** features a lot of fixes:

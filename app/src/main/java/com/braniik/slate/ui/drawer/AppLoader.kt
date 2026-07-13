@@ -1,15 +1,19 @@
 package com.braniik.slate.ui.drawer
 
 import android.content.Context
-import android.content.Intent
+import android.content.pm.LauncherApps
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Rect
 import android.graphics.drawable.AdaptiveIconDrawable
 import android.graphics.drawable.Drawable
+import android.os.Process
+import android.os.UserHandle
+import android.os.UserManager
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.core.graphics.drawable.toBitmap
+import androidx.core.graphics.drawable.toDrawable
 import com.braniik.slate.data.IconPackManager
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -19,8 +23,12 @@ private const val MAX_ICON_SIZE_DP = 96
 data class AppInfo(
     val label: String,
     val packageName: String,
+    val userSerial: Long,
+    val user: UserHandle,
     val icon: ImageBitmap
-)
+) {
+    val key: String get() = "$packageName:$userSerial"
+}
 
 fun Drawable.toUnmaskedBitmap(sizePx: Int): Bitmap {
     if (this is AdaptiveIconDrawable) {
@@ -40,19 +48,33 @@ suspend fun loadApps(context: Context, iconPackPackage: String): List<AppInfo> =
         val iconPackManager =
             if (iconPackPackage.isNotBlank()) IconPackManager(context, iconPackPackage) else null
         val pm = context.packageManager
+        val launcherApps = context.getSystemService(LauncherApps::class.java)
+            ?: return@withContext emptyList()
+        val userManager = context.getSystemService(UserManager::class.java)
+            ?: return@withContext emptyList()
+        val myUser = Process.myUserHandle()
         val iconSizePx = (MAX_ICON_SIZE_DP * context.resources.displayMetrics.density).toInt()
-        val intent = Intent(Intent.ACTION_MAIN).apply {
-            addCategory(Intent.CATEGORY_LAUNCHER)
-        }
-        pm.queryIntentActivities(intent, 0)
-            .map { info ->
-                val pkg = info.activityInfo.packageName
-                val drawable = iconPackManager?.getIcon(pkg) ?: info.loadIcon(pm)
+
+        launcherApps.profiles.flatMap { user ->
+            val serial = userManager.getSerialNumberForUser(user)
+            launcherApps.getActivityList(null, user).map { activity ->
+                val pkg = activity.applicationInfo.packageName
+                val drawable = iconPackManager?.getIcon(pkg) ?: activity.getIcon(0)
+                var bitmap = drawable.toUnmaskedBitmap(iconSizePx)
+                if (user != myUser) {
+                    bitmap = pm
+                        .getUserBadgedIcon(bitmap.toDrawable(context.resources), user)
+                        .toBitmap(iconSizePx, iconSizePx)
+                }
                 AppInfo(
-                    label = info.loadLabel(pm).toString(),
+                    label = activity.label.toString(),
                     packageName = pkg,
-                    icon = drawable.toUnmaskedBitmap(iconSizePx).asImageBitmap()
+                    userSerial = serial,
+                    user = user,
+                    icon = bitmap.asImageBitmap()
                 )
             }
+        }
+            .distinctBy { it.key }
             .sortedBy { it.label.lowercase() }
     }

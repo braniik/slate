@@ -22,6 +22,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.braniik.slate.data.HomeScreenApp
+import com.braniik.slate.data.key
 import com.braniik.slate.data.LauncherSettings
 import com.braniik.slate.data.packageChangesFlow
 import com.braniik.slate.data.WallpaperConfig
@@ -69,9 +70,23 @@ fun AppDrawerScreen(
     val homeApps by context.homeScreenAppsFlow().collectAsState(initial = emptyList())
 
     LaunchedEffect(allApps, homeApps) {
-        val installed = allApps?.mapTo(HashSet()) { it.packageName } ?: return@LaunchedEffect
-        val pruned = homeApps.filter { it.packageName in installed }
-        if (pruned.size != homeApps.size) context.saveHomeScreenApps(pruned)
+        val apps = allApps ?: return@LaunchedEffect
+        if (apps.isEmpty()) return@LaunchedEffect
+        val installedKeys = apps.mapTo(HashSet()) { it.key }
+        val visibleSerials = apps.mapTo(HashSet()) { it.userSerial }
+        val byPackage = apps.groupBy { it.packageName }
+        val migrated = homeApps.mapNotNull { app ->
+            when {
+                // still installed under the same profile
+                app.key in installedKeys -> app
+                // profile is visible but the app is gone: prune
+                app.userSerial in visibleSerials -> null
+                // stale serial (pre-0.8 layout)
+                else -> byPackage[app.packageName].orEmpty().singleOrNull()
+                    ?.let { app.copy(userSerial = it.userSerial) } ?: app
+            }
+        }
+        if (migrated != homeApps) context.saveHomeScreenApps(migrated)
     }
 
     val wallpaperConfig by context.wallpaperConfigFlow().collectAsState(initial = WallpaperConfig())
@@ -105,7 +120,7 @@ fun AppDrawerScreen(
     }
 
     val onLongPress: (HomeScreenApp) -> Unit = { app ->
-        if (ui.mode == HomeMode.NORMAL) openAppInfo(context, app.packageName)
+        if (ui.mode == HomeMode.NORMAL) openAppInfo(context, app.packageName, app.userSerial)
     }
 
     val pos = settings.toolbarPosition
@@ -153,8 +168,8 @@ fun AppDrawerScreen(
                 allApps != null && homeApps.isEmpty() && ui.mode != HomeMode.ADDING -> EmptyState()
 
                 ui.mode == HomeMode.ADDING -> {
-                    val existing = homeApps.map { it.packageName }.toSet()
-                    val available = allApps.orEmpty().filter { it.packageName !in existing }
+                    val existing = homeApps.map { it.key }.toSet()
+                    val available = allApps.orEmpty().filter { it.key !in existing }
                     AddAppsOverlay(
                         apps = available,
                         onAdd = { info ->
@@ -162,6 +177,7 @@ fun AppDrawerScreen(
                             save(
                                 homeApps + HomeScreenApp(
                                     packageName = info.packageName,
+                                    userSerial = info.userSerial,
                                     order = homeApps.size,
                                     xPos = x,
                                     yPos = y
@@ -177,11 +193,11 @@ fun AppDrawerScreen(
                     allApps = allApps.orEmpty(),
                     mode = ui.mode,
                     guideLines = guideLines,
-                    onTap = { app -> handleAppTap(app, ui.mode, context, homeApps, ::save) { ui.editingPkg = it.packageName } },
+                    onTap = { app -> handleAppTap(app, ui.mode, context, homeApps, ::save) { ui.editingKey = it.key } },
                     onLongPress = onLongPress,
                     onPositionChanged = { app, newX, newY ->
                         save(homeApps.map {
-                            if (it.packageName == app.packageName) it.copy(xPos = newX, yPos = newY) else it
+                            if (it.key == app.key) it.copy(xPos = newX, yPos = newY) else it
                         })
                     },
                     onGuidesChanged = { updatedGuides ->
@@ -196,7 +212,7 @@ fun AppDrawerScreen(
                         allApps = allApps.orEmpty(),
                         mode = ui.mode,
                         horizontal = settings.listOrientation == "horizontal",
-                        onTap = { app -> handleAppTap(app, ui.mode, context, homeApps, ::save) { ui.editingPkg = it.packageName } },
+                        onTap = { app -> handleAppTap(app, ui.mode, context, homeApps, ::save) { ui.editingKey = it.key } },
                         onLongPress = onLongPress,
                         onReorder = ::save
                     )
@@ -220,17 +236,17 @@ fun AppDrawerScreen(
             }
         }
 
-        ui.editingPkg?.let { pkg ->
-            val app = homeApps.find { it.packageName == pkg } ?: run { ui.editingPkg = null; return@let }
-            val info = allApps?.find { it.packageName == pkg } ?: return@let
+        ui.editingKey?.let { editKey ->
+            val app = homeApps.find { it.key == editKey } ?: run { ui.editingKey = null; return@let }
+            val info = allApps?.find { it.key == editKey } ?: return@let
             val onSave: (HomeScreenApp) -> Unit = { updated ->
-                save(homeApps.map { if (it.packageName == updated.packageName) updated else it })
-                ui.editingPkg = null
+                save(homeApps.map { if (it.key == updated.key) updated else it })
+                ui.editingKey = null
             }
             if (settings.layoutMode == "freescreen") {
-                FreescreenEditDialog(app, info, onDismiss = { ui.editingPkg = null }, onSave = onSave)
+                FreescreenEditDialog(app, info, onDismiss = { ui.editingKey = null }, onSave = onSave)
             } else {
-                ListEditDialog(app, info, onDismiss = { ui.editingPkg = null }, onSave = onSave)
+                ListEditDialog(app, info, onDismiss = { ui.editingKey = null }, onSave = onSave)
             }
         }
 
@@ -270,9 +286,9 @@ private fun handleAppTap(
     openEdit: (HomeScreenApp) -> Unit
 ) {
     when (mode) {
-        HomeMode.NORMAL -> launchApp(context, app.packageName)
+        HomeMode.NORMAL -> launchApp(context, app.packageName, app.userSerial)
         HomeMode.EDITING -> openEdit(app)
-        HomeMode.DELETING -> save(homeApps.filter { it.packageName != app.packageName })
+        HomeMode.DELETING -> save(homeApps.filter { it.key != app.key })
         HomeMode.ADDING -> {}
     }
 }

@@ -34,6 +34,7 @@ Freescreen mode is the centerpiece: your home screen is a blank **slate** where 
 - **Icon shapes:** Round, square, squircle, hexagon, octagon. Pick per icon or blanket-set all at once.
 - **Icon rotation:** Rotate any icon from -360° to 360°. Shape rotates with the icon. Per-app or blanket-set.
 - **Icon packs:** Supports all major pack formats (ADW, Nova, Apex, GO, Tesla)
+- **Work profiles:** Apps from managed profiles (Shelter, Island) appear alongside personal apps, badged with the system work indicator, and launch into the right profile.
 - **Blanket-set:** Apply icon size, shape, rotation, or label settings to every app at once.
 - **You choose what shows up.** Tap + to add apps, tap the trash to remove. Nothing appears unless you put it there.
 
@@ -78,8 +79,9 @@ git clone https://github.com/braniik/slate.git
 │   ├── Contrast.kt                — WCAG relative luminance, the single light/dark foreground decision
 │   ├── GuideLine.kt               — guide line model, JSON serialization, DataStore persistence
 │   ├── IconPackManager.kt         — icon pack discovery, appfilter.xml parsing, icon resolution
-│   ├── LauncherPreferences.kt     — DataStore keys, HomeScreenApp model, settings flows
-│   ├── PackageChanges.kt          — flow of app install/update/removal broadcasts
+│   ├── LauncherPreferences.kt     — DataStore keys, HomeScreenApp model (package + profile identity), settings flows
+│   ├── LauncherRole.kt            — HOME role check and request intent (RoleManager)
+│   ├── PackageChanges.kt          — flow of app/profile changes via LauncherApps.Callback
 │   ├── SystemWallpaperApplier.kt  — renders wallpaper config to the system wallpaper
 │   ├── WallpaperConfig.kt         — wallpaper mode/colors/gradient, per-edge text color for solid/gradient
 │   ├── WallpaperImageStore.kt     — image save/load/compress, palette extraction
@@ -90,7 +92,7 @@ git clone https://github.com/braniik/slate.git
     │   ├── AddAppsOverlay.kt       — scrollable picker for adding apps to home
     │   ├── AppActions.kt           — acting on apps: launch, open the system App Info sheet
     │   ├── AppDrawerScreen.kt      — wires modes, dialogs, back handling, home reset, reloads on pack
-    │   ├── AppLoader.kt            — async app query, one-time unmasked icon rasterization off the main thread
+    │   ├── AppLoader.kt            — LauncherApps query across profiles, badged work icons, unmasked rasterization
     │   ├── HomeMode.kt             — NORMAL, ADDING, EDITING, DELETING enum
     │   ├── HomeUiState.kt          — ephemeral mode/overlay state, its two transitions: back (peel topmost) and home (reset)
     │   ├── Toolbar.kt              — position-aware toolbar
@@ -131,9 +133,7 @@ git clone https://github.com/braniik/slate.git
 - [x] 0.5.2 — Icon shapes (round, square, squircle, hexagon, octagon)
 - [x] 0.6 — Icon pack support
 - [x] 0.6.1 — Icon rotation
-- [ ] 0.7 — Polish and refinement
+- [x] 0.7 — Polish and refinement
+- [x] 0.8 — Production readiness
 - [ ] 1.0 — F-Droid release (and other stores, if Android stays open)
 
-## Contributing
-
-Slate is a personal project but contributions are welcome. If you find a bug, have a feature idea, or want to help get it on F-Droid, open an issue or PR.

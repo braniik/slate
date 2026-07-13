@@ -36,6 +36,7 @@ data class LauncherSettings(
 
 data class HomeScreenApp(
     val packageName: String,
+    val userSerial: Long = 0L,
     val iconSizeDp: Int = 56,
     val showLabel: Boolean = true,
     val listTextSizeSp: Int = 16,
@@ -47,8 +48,11 @@ data class HomeScreenApp(
     val order: Int = 0
 )
 
+val HomeScreenApp.key: String get() = "$packageName:$userSerial"
+
 fun HomeScreenApp.toJson(): JSONObject = JSONObject().apply {
     put("packageName", packageName)
+    put("userSerial", userSerial)
     put("iconSizeDp", iconSizeDp)
     put("showLabel", showLabel)
     put("listTextSizeSp", listTextSizeSp)
@@ -62,6 +66,7 @@ fun HomeScreenApp.toJson(): JSONObject = JSONObject().apply {
 
 fun JSONObject.toHomeScreenApp(): HomeScreenApp = HomeScreenApp(
     packageName = getString("packageName"),
+    userSerial = optLong("userSerial", 0L),
     iconSizeDp = optInt("iconSizeDp", 56),
     showLabel = optBoolean("showLabel", true),
     listTextSizeSp = optInt("listTextSizeSp", 16),

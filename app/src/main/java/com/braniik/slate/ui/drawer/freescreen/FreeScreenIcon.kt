@@ -30,6 +30,7 @@ import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.braniik.slate.data.GuideLine
+import com.braniik.slate.data.key
 import com.braniik.slate.data.GuideOrientation
 import com.braniik.slate.data.HomeScreenApp
 import com.braniik.slate.data.LocalWallpaperTextColor
@@ -56,8 +57,8 @@ internal fun FreescreenIcon(
 ) {
     val density = LocalDensity.current
 
-    var localX by remember(homeApp.packageName) { mutableFloatStateOf(homeApp.xPos) }
-    var localY by remember(homeApp.packageName) { mutableFloatStateOf(homeApp.yPos) }
+    var localX by remember(homeApp.key) { mutableFloatStateOf(homeApp.xPos) }
+    var localY by remember(homeApp.key) { mutableFloatStateOf(homeApp.yPos) }
 
     LaunchedEffect(homeApp.xPos, homeApp.yPos) {
         localX = homeApp.xPos
@@ -88,7 +89,7 @@ internal fun FreescreenIcon(
                         .border(1.dp, SlateDanger, RoundedCornerShape(8.dp))
                 } else Modifier
             )
-            .pointerInput(homeApp.packageName) {
+            .pointerInput(homeApp.key) {
                 detectTapGestures(
                     onLongPress = { onLongPress() },
                     onTap = { onTap() }
@@ -96,7 +97,7 @@ internal fun FreescreenIcon(
             }
             .then(
                 if (canDrag) {
-                    Modifier.pointerInput(homeApp.packageName, homeApp.iconSizeDp, guideLines) {
+                    Modifier.pointerInput(homeApp.key, homeApp.iconSizeDp, guideLines) {
                         detectDragGestures(
                             onDragStart = {
                                 snappedVertical = null
