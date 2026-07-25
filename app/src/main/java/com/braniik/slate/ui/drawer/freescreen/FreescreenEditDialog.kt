@@ -20,6 +20,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.braniik.slate.data.HomeScreenApp
+import com.braniik.slate.data.key
 import com.braniik.slate.ui.drawer.AppInfo
 import com.braniik.slate.ui.drawer.common.EditDialogShell
 import com.braniik.slate.ui.drawer.common.IconShapePicker
@@ -35,23 +36,20 @@ fun FreescreenEditDialog(
     onDismiss: () -> Unit,
     onSave: (HomeScreenApp) -> Unit
 ) {
-    var iconSize by remember { mutableIntStateOf(app.iconSizeDp) }
-    var showLabel by remember { mutableStateOf(app.showLabel) }
-    var iconShape by remember { mutableStateOf(app.iconShape) }
-    var rotation by remember { mutableFloatStateOf(app.rotationDeg) }
+    var iconSize by remember(app.key) { mutableIntStateOf(app.iconSizeDp) }
+    var showLabel by remember(app.key) { mutableStateOf(app.showLabel) }
+    var iconShape by remember(app.key) { mutableStateOf(app.iconShape) }
+    var rotation by remember(app.key) { mutableFloatStateOf(app.rotationDeg) }
 
     EditDialogShell(
         title = info.label,
         onDismiss = onDismiss,
         onSave = {
-            val shift = (iconSize - app.iconSizeDp) / 2f
             onSave(app.copy(
                 iconSizeDp = iconSize,
                 showLabel = showLabel,
                 iconShape = iconShape,
-                rotationDeg = rotation,
-                xPos = app.xPos - shift,
-                yPos = app.yPos - shift
+                rotationDeg = rotation
             ))
         }
     ) {

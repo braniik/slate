@@ -1,0 +1,6 @@
+0.9 is pre-release stabilization from real daily-driving:
+
+• Guide lines are now finger-friendly: wider edge zones
+• Icons with wide labels now snap their true visual center onto guide lines
+• Fixed edits from the per-app dialog occasionally not applying
+• Faster cold start: app icons rasterize in parallel

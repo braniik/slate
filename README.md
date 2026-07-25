@@ -78,6 +78,7 @@ git clone https://github.com/braniik/slate.git
 ├── data/
 │   ├── Contrast.kt                — WCAG relative luminance, the single light/dark foreground decision
 │   ├── GuideLine.kt               — guide line model, JSON serialization, DataStore persistence
+│   ├── HomeAppsStore.kt           — runtime owner of the home app list: edits apply in memory synchronously, DataStore trails as a write-behind mirror
 │   ├── IconPackManager.kt         — icon pack discovery, appfilter.xml parsing, icon resolution
 │   ├── LauncherPreferences.kt     — DataStore keys, HomeScreenApp model (package + profile identity), settings flows
 │   ├── LauncherRole.kt            — HOME role check and request intent (RoleManager)
@@ -91,7 +92,7 @@ git clone https://github.com/braniik/slate.git
     ├── drawer/
     │   ├── AddAppsOverlay.kt       — scrollable picker for adding apps to home
     │   ├── AppActions.kt           — acting on apps: launch, open the system App Info sheet
-    │   ├── AppDrawerScreen.kt      — wires modes, dialogs, back handling, home reset, reloads on pack
+    │   ├── AppDrawerScreen.kt      — wires modes, dialogs, back handling, home reset, every home list edit goes through HomeAppsStore
     │   ├── AppLoader.kt            — LauncherApps query across profiles, badged work icons, unmasked rasterization
     │   ├── HomeMode.kt             — NORMAL, ADDING, EDITING, DELETING enum
     │   ├── HomeUiState.kt          — ephemeral mode/overlay state, its two transitions: back (peel topmost) and home (reset)
@@ -134,6 +135,7 @@ git clone https://github.com/braniik/slate.git
 - [x] 0.6 — Icon pack support
 - [x] 0.6.1 — Icon rotation
 - [x] 0.7 — Polish and refinement
-- [ ] 0.8 — Production readiness
+- [x] 0.8 — Production readiness
+- [ ] 0.9 — Pre-release 
 - [ ] 1.0 — F-Droid release (and other stores, if Android stays open)
 

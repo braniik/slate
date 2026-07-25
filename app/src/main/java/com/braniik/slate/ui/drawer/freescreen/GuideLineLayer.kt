@@ -4,11 +4,15 @@ import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.systemGestureExclusion
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
@@ -22,7 +26,7 @@ import com.braniik.slate.data.GuideOrientation
 import com.braniik.slate.data.LocalWallpaperTextColor
 import kotlin.math.abs
 
-private val EDGE_ZONE = 24.dp
+private val EDGE_ZONE = 32.dp
 private val GUIDE_HIT = 20.dp
 private val DELETE_THRESHOLD = 30.dp
 private val LINE_WIDTH = 1.dp
@@ -74,6 +78,7 @@ internal fun GuideLineLayer(
                         hitGuide != null -> null
                         pos.x < edgePx -> GuideOrientation.VERTICAL
                         pos.x > size.width - edgePx -> GuideOrientation.VERTICAL
+                        pos.y < edgePx -> GuideOrientation.HORIZONTAL
                         pos.y > size.height - edgePx -> GuideOrientation.HORIZONTAL
                         else -> null
                     }
@@ -173,5 +178,20 @@ internal fun GuideLineLayer(
                     }
                 }
             }
-    )
+    ) {
+        Box(
+            Modifier
+                .align(Alignment.CenterStart)
+                .width(EDGE_ZONE)
+                .height(200.dp)
+                .systemGestureExclusion()
+        )
+        Box(
+            Modifier
+                .align(Alignment.CenterEnd)
+                .width(EDGE_ZONE)
+                .height(200.dp)
+                .systemGestureExclusion()
+        )
+    }
 }

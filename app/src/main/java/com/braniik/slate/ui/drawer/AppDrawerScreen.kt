@@ -28,10 +28,9 @@ import com.braniik.slate.data.packageChangesFlow
 import com.braniik.slate.data.WallpaperConfig
 import com.braniik.slate.data.applySystemWallpaper
 import com.braniik.slate.data.guideLinesFlow
-import com.braniik.slate.data.homeScreenAppsFlow
+import com.braniik.slate.data.HomeAppsStore
 import com.braniik.slate.data.iconPackFlow
 import com.braniik.slate.data.saveGuideLines
-import com.braniik.slate.data.saveHomeScreenApps
 import com.braniik.slate.data.saveIconPack
 import com.braniik.slate.data.saveLayoutMode
 import com.braniik.slate.data.saveListOrientation
@@ -57,7 +56,7 @@ fun AppDrawerScreen(
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
 
-    val selectedIconPack by context.iconPackFlow().collectAsState(initial = "")
+    val selectedIconPack by remember { context.iconPackFlow() }.collectAsState(initial = "")
     var packageGeneration by remember { mutableIntStateOf(0) }
     LaunchedEffect(Unit) {
         context.packageChangesFlow().collect { packageGeneration++ }
@@ -67,30 +66,32 @@ fun AppDrawerScreen(
         allApps = loadApps(context, selectedIconPack)
     }
 
-    val homeApps by context.homeScreenAppsFlow().collectAsState(initial = emptyList())
+    val homeAppsStore = remember { HomeAppsStore(context, scope) }
+    val homeApps by homeAppsStore.apps.collectAsState()
 
-    LaunchedEffect(allApps, homeApps) {
+    LaunchedEffect(allApps) {
         val apps = allApps ?: return@LaunchedEffect
         if (apps.isEmpty()) return@LaunchedEffect
         val installedKeys = apps.mapTo(HashSet()) { it.key }
         val visibleSerials = apps.mapTo(HashSet()) { it.userSerial }
         val byPackage = apps.groupBy { it.packageName }
-        val migrated = homeApps.mapNotNull { app ->
-            when {
-                // still installed under the same profile
-                app.key in installedKeys -> app
-                // profile is visible but the app is gone: prune
-                app.userSerial in visibleSerials -> null
-                // stale serial (pre-0.8 layout)
-                else -> byPackage[app.packageName].orEmpty().singleOrNull()
-                    ?.let { app.copy(userSerial = it.userSerial) } ?: app
+        homeAppsStore.update { stored ->
+            stored.mapNotNull { app ->
+                when {
+                    // still installed under the same profile
+                    app.key in installedKeys -> app
+                    // profile is visible but the app is gone: prune
+                    app.userSerial in visibleSerials -> null
+                    // stale serial (pre-0.8 layout)
+                    else -> byPackage[app.packageName].orEmpty().singleOrNull()
+                        ?.let { app.copy(userSerial = it.userSerial) } ?: app
+                }
             }
         }
-        if (migrated != homeApps) context.saveHomeScreenApps(migrated)
     }
 
-    val wallpaperConfig by context.wallpaperConfigFlow().collectAsState(initial = WallpaperConfig())
-    val guideLines by context.guideLinesFlow().collectAsState(initial = emptyList())
+    val wallpaperConfig by remember { context.wallpaperConfigFlow() }.collectAsState(initial = WallpaperConfig())
+    val guideLines by remember { context.guideLinesFlow() }.collectAsState(initial = emptyList())
     val ui = rememberHomeUiState()
 
     LaunchedEffect(homeResetSignal) {
@@ -99,23 +100,18 @@ fun AppDrawerScreen(
 
     BackHandler { ui.dismissTopmost() }
 
-    fun save(apps: List<HomeScreenApp>) {
-        scope.launch { context.saveHomeScreenApps(apps) }
-    }
-
     fun switchMode(targetMode: String) {
-        scope.launch {
-            val resetApps = if (targetMode == "freescreen") {
-                homeApps.mapIndexed { i, app ->
+        homeAppsStore.update { stored ->
+            if (targetMode == "freescreen") {
+                stored.mapIndexed { i, app ->
                     val (x, y) = nextFreescreenPos(i)
                     app.copy(xPos = x, yPos = y)
                 }
             } else {
-                homeApps.mapIndexed { i, app -> app.copy(order = i) }
+                stored.mapIndexed { i, app -> app.copy(order = i) }
             }
-            context.saveHomeScreenApps(resetApps)
-            context.saveLayoutMode(targetMode)
         }
+        scope.launch { context.saveLayoutMode(targetMode) }
         ui.showSettings = false
     }
 
@@ -173,16 +169,19 @@ fun AppDrawerScreen(
                     AddAppsOverlay(
                         apps = available,
                         onAdd = { info ->
-                            val (x, y) = nextFreescreenPos(homeApps.size)
-                            save(
-                                homeApps + HomeScreenApp(
-                                    packageName = info.packageName,
-                                    userSerial = info.userSerial,
-                                    order = homeApps.size,
-                                    xPos = x,
-                                    yPos = y
-                                )
-                            )
+                            homeAppsStore.update { stored ->
+                                if (stored.any { it.key == info.key }) stored
+                                else {
+                                    val (x, y) = nextFreescreenPos(stored.size)
+                                    stored + HomeScreenApp(
+                                        packageName = info.packageName,
+                                        userSerial = info.userSerial,
+                                        order = stored.size,
+                                        xPos = x,
+                                        yPos = y
+                                    )
+                                }
+                            }
                         },
                         onClose = { ui.mode = HomeMode.NORMAL }
                     )
@@ -193,12 +192,14 @@ fun AppDrawerScreen(
                     allApps = allApps.orEmpty(),
                     mode = ui.mode,
                     guideLines = guideLines,
-                    onTap = { app -> handleAppTap(app, ui.mode, context, homeApps, ::save) { ui.editingKey = it.key } },
+                    onTap = { app -> handleAppTap(app, ui.mode, context, homeAppsStore::update) { ui.editingKey = it.key } },
                     onLongPress = onLongPress,
                     onPositionChanged = { app, newX, newY ->
-                        save(homeApps.map {
-                            if (it.key == app.key) it.copy(xPos = newX, yPos = newY) else it
-                        })
+                        homeAppsStore.update { stored ->
+                            stored.map {
+                                if (it.key == app.key) it.copy(xPos = newX, yPos = newY) else it
+                            }
+                        }
                     },
                     onGuidesChanged = { updatedGuides ->
                         scope.launch { context.saveGuideLines(updatedGuides) }
@@ -212,9 +213,14 @@ fun AppDrawerScreen(
                         allApps = allApps.orEmpty(),
                         mode = ui.mode,
                         horizontal = settings.listOrientation == "horizontal",
-                        onTap = { app -> handleAppTap(app, ui.mode, context, homeApps, ::save) { ui.editingKey = it.key } },
+                        onTap = { app -> handleAppTap(app, ui.mode, context, homeAppsStore::update) { ui.editingKey = it.key } },
                         onLongPress = onLongPress,
-                        onReorder = ::save
+                        onReorder = { reordered ->
+                            val orderByKey = reordered.associate { it.key to it.order }
+                            homeAppsStore.update { stored ->
+                                stored.map { it.copy(order = orderByKey[it.key] ?: it.order) }
+                            }
+                        }
                     )
                 }
             }
@@ -239,8 +245,20 @@ fun AppDrawerScreen(
         ui.editingKey?.let { editKey ->
             val app = homeApps.find { it.key == editKey } ?: run { ui.editingKey = null; return@let }
             val info = allApps?.find { it.key == editKey } ?: return@let
-            val onSave: (HomeScreenApp) -> Unit = { updated ->
-                save(homeApps.map { if (it.key == updated.key) updated else it })
+            val onSave: (HomeScreenApp) -> Unit = { edited ->
+                homeAppsStore.update { stored ->
+                    stored.map { current ->
+                        if (current.key != edited.key) current
+                        else {
+                            val shift = (edited.iconSizeDp - current.iconSizeDp) / 2f
+                            edited.copy(
+                                xPos = current.xPos - shift,
+                                yPos = current.yPos - shift,
+                                order = current.order
+                            )
+                        }
+                    }
+                }
                 ui.editingKey = null
             }
             if (settings.layoutMode == "freescreen") {
@@ -255,7 +273,7 @@ fun AppDrawerScreen(
                 isFreescreen = settings.layoutMode == "freescreen",
                 onDismiss = { ui.showBlanketSet = false },
                 onApply = { transform ->
-                    save(homeApps.map { it.transform() })
+                    homeAppsStore.update { stored -> stored.map { it.transform() } }
                     ui.showBlanketSet = false
                 }
             )
@@ -281,14 +299,13 @@ private fun handleAppTap(
     app: HomeScreenApp,
     mode: HomeMode,
     context: android.content.Context,
-    homeApps: List<HomeScreenApp>,
-    save: (List<HomeScreenApp>) -> Unit,
+    update: ((List<HomeScreenApp>) -> List<HomeScreenApp>) -> Unit,
     openEdit: (HomeScreenApp) -> Unit
 ) {
     when (mode) {
         HomeMode.NORMAL -> launchApp(context, app.packageName, app.userSerial)
         HomeMode.EDITING -> openEdit(app)
-        HomeMode.DELETING -> save(homeApps.filter { it.key != app.key })
+        HomeMode.DELETING -> update { stored -> stored.filter { it.key != app.key } }
         HomeMode.ADDING -> {}
     }
 }

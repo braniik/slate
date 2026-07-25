@@ -20,6 +20,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.braniik.slate.data.HomeScreenApp
+import com.braniik.slate.data.key
 import com.braniik.slate.ui.drawer.AppInfo
 import com.braniik.slate.ui.drawer.common.EditDialogShell
 import com.braniik.slate.ui.drawer.common.IconShapePicker
@@ -50,11 +51,11 @@ fun ListEditDialog(
     onDismiss: () -> Unit,
     onSave: (HomeScreenApp) -> Unit
 ) {
-    var textSize by remember { mutableIntStateOf(app.listTextSizeSp) }
-    var iconSize by remember { mutableIntStateOf(app.listIconSizeDp) }
-    var showIcon by remember { mutableStateOf(app.showLabel) }
-    var iconShape by remember { mutableStateOf(app.iconShape) }
-    var rotation by remember { mutableFloatStateOf(app.rotationDeg) }
+    var textSize by remember(app.key) { mutableIntStateOf(app.listTextSizeSp) }
+    var iconSize by remember(app.key) { mutableIntStateOf(app.listIconSizeDp) }
+    var showIcon by remember(app.key) { mutableStateOf(app.showLabel) }
+    var iconShape by remember(app.key) { mutableStateOf(app.iconShape) }
+    var rotation by remember(app.key) { mutableFloatStateOf(app.rotationDeg) }
 
     EditDialogShell(
         title = info.label,

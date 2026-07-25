@@ -16,6 +16,9 @@ import androidx.core.graphics.drawable.toBitmap
 import androidx.core.graphics.drawable.toDrawable
 import com.braniik.slate.data.IconPackManager
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.withContext
 
 private const val MAX_ICON_SIZE_DP = 96
@@ -55,25 +58,29 @@ suspend fun loadApps(context: Context, iconPackPackage: String): List<AppInfo> =
         val myUser = Process.myUserHandle()
         val iconSizePx = (MAX_ICON_SIZE_DP * context.resources.displayMetrics.density).toInt()
 
-        launcherApps.profiles.flatMap { user ->
-            val serial = userManager.getSerialNumberForUser(user)
-            launcherApps.getActivityList(null, user).map { activity ->
-                val pkg = activity.applicationInfo.packageName
-                val drawable = iconPackManager?.getIcon(pkg) ?: activity.getIcon(0)
-                var bitmap = drawable.toUnmaskedBitmap(iconSizePx)
-                if (user != myUser) {
-                    bitmap = pm
-                        .getUserBadgedIcon(bitmap.toDrawable(context.resources), user)
-                        .toBitmap(iconSizePx, iconSizePx)
+        coroutineScope {
+            launcherApps.profiles.flatMap { user ->
+                val serial = userManager.getSerialNumberForUser(user)
+                launcherApps.getActivityList(null, user).map { activity ->
+                    async {
+                        val pkg = activity.applicationInfo.packageName
+                        val drawable = iconPackManager?.getIcon(pkg) ?: activity.getIcon(0)
+                        var bitmap = drawable.toUnmaskedBitmap(iconSizePx)
+                        if (user != myUser) {
+                            bitmap = pm
+                                .getUserBadgedIcon(bitmap.toDrawable(context.resources), user)
+                                .toBitmap(iconSizePx, iconSizePx)
+                        }
+                        AppInfo(
+                            label = activity.label.toString(),
+                            packageName = pkg,
+                            userSerial = serial,
+                            user = user,
+                            icon = bitmap.asImageBitmap()
+                        )
+                    }
                 }
-                AppInfo(
-                    label = activity.label.toString(),
-                    packageName = pkg,
-                    userSerial = serial,
-                    user = user,
-                    icon = bitmap.asImageBitmap()
-                )
-            }
+            }.awaitAll()
         }
             .distinctBy { it.key }
             .sortedBy { it.label.lowercase() }

@@ -1,5 +1,14 @@
 # Slate Changelog
 
+## 0.8.0 → 0.9
+
+**0.9** is the pre-release version that should be ready for F-Droid, I fixed a couple bugs from actually daily-driving slate, more fixes might come.
+
+- **Guide lines are now finger-friendly:** wider edge zones
+- **Icons with wide labels now snap correctly:** to their true visual center onto guide lines
+- Fixed edits from the per-app dialog occasionally not applying
+- **Faster cold start:** app icons rasterize in parallel
+
 ## 0.7.6 → 0.8.0
  
 **0.8.0** is the production-readiness release

@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -44,16 +45,18 @@ fun HomeFreescreen(
 
         homeApps.forEach { homeApp ->
             val info = allApps.find { it.key == homeApp.key } ?: return@forEach
-            FreescreenIcon(
-                homeApp = homeApp,
-                info = info,
-                containerSize = containerSize,
-                mode = mode,
-                guideLines = guideLines,
-                onTap = { onTap(homeApp) },
-                onLongPress = { onLongPress(homeApp) },
-                onPositionChanged = { x, y -> onPositionChanged(homeApp, x, y) }
-            )
+            key(homeApp.key) {
+                FreescreenIcon(
+                    homeApp = homeApp,
+                    info = info,
+                    containerSize = containerSize,
+                    mode = mode,
+                    guideLines = guideLines,
+                    onTap = { onTap(homeApp) },
+                    onLongPress = { onLongPress(homeApp) },
+                    onPositionChanged = { x, y -> onPositionChanged(homeApp, x, y) }
+                )
+            }
         }
     }
 }

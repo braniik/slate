@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -23,6 +22,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.IntOffset
@@ -56,22 +56,21 @@ internal fun FreescreenIcon(
     onPositionChanged: (Float, Float) -> Unit
 ) {
     val density = LocalDensity.current
-
-    var localX by remember(homeApp.key) { mutableFloatStateOf(homeApp.xPos) }
-    var localY by remember(homeApp.key) { mutableFloatStateOf(homeApp.yPos) }
-
-    LaunchedEffect(homeApp.xPos, homeApp.yPos) {
-        localX = homeApp.xPos
-        localY = homeApp.yPos
-    }
+    var localX by remember(homeApp.key, homeApp.xPos) { mutableFloatStateOf(homeApp.xPos) }
+    var localY by remember(homeApp.key, homeApp.yPos) { mutableFloatStateOf(homeApp.yPos) }
 
     val canDrag = mode == HomeMode.NORMAL || mode == HomeMode.EDITING
     val containerWidthDp = with(density) { containerSize.width.toDp().value }
     val containerHeightDp = with(density) { containerSize.height.toDp().value }
     val iconFootprintDp = homeApp.iconSizeDp + 2 * PADDING_DP
     val iconHalfDp = homeApp.iconSizeDp / 2f
-    val centerOffsetDp = PADDING_DP + iconHalfDp
 
+    val centerOffsetYDp = PADDING_DP + iconHalfDp
+    var measuredWidthDp by remember { mutableFloatStateOf(iconFootprintDp) }
+    var measuredHeightDp by remember { mutableFloatStateOf(iconFootprintDp) }
+
+    var dragStartX by remember { mutableFloatStateOf(0f) }
+    var dragStartY by remember { mutableFloatStateOf(0f) }
     var snappedVertical by remember { mutableStateOf<GuideLine?>(null) }
     var snappedHorizontal by remember { mutableStateOf<GuideLine?>(null) }
     var perpAccumX by remember { mutableFloatStateOf(0f) }
@@ -81,6 +80,10 @@ internal fun FreescreenIcon(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(4.dp),
         modifier = Modifier
+            .onSizeChanged {
+                measuredWidthDp = with(density) { it.width.toDp().value }
+                measuredHeightDp = with(density) { it.height.toDp().value }
+            }
             .offset { IntOffset(localX.dp.roundToPx(), localY.dp.roundToPx()) }
             .then(
                 if (mode == HomeMode.DELETING) {
@@ -104,14 +107,21 @@ internal fun FreescreenIcon(
                                 snappedHorizontal = null
                                 perpAccumX = 0f
                                 perpAccumY = 0f
+                                dragStartX = localX
+                                dragStartY = localY
                             },
-                            onDragEnd = { onPositionChanged(localX, localY) },
+                            onDragEnd = {
+                                if (abs(localX - dragStartX) > 0.5f || abs(localY - dragStartY) > 0.5f) {
+                                    onPositionChanged(localX, localY)
+                                }
+                            },
                             onDrag = { change, dragAmount ->
                                 change.consume()
                                 val dxDp = with(density) { dragAmount.x.toDp().value }
                                 val dyDp = with(density) { dragAmount.y.toDp().value }
-                                val maxX = (containerWidthDp - iconFootprintDp).coerceAtLeast(0f)
-                                val maxY = (containerHeightDp - iconFootprintDp).coerceAtLeast(0f)
+                                val maxX = (containerWidthDp - measuredWidthDp).coerceAtLeast(0f)
+                                val maxY = (containerHeightDp - measuredHeightDp).coerceAtLeast(0f)
+                                val centerOffsetXDp = measuredWidthDp / 2f
 
                                 val rawNewX = localX + dxDp
                                 val rawNewY = localY + dyDp
@@ -120,23 +130,23 @@ internal fun FreescreenIcon(
                                 if (sv != null) {
                                     perpAccumX += dxDp
                                     if (abs(perpAccumX) > BREAK_THRESHOLD_DP) {
-                                        newX = (sv.positionDp - centerOffsetDp + perpAccumX)
+                                        newX = (sv.positionDp - centerOffsetXDp + perpAccumX)
                                             .coerceIn(0f, maxX)
                                         snappedVertical = null
                                         perpAccumX = 0f
                                     } else {
-                                        newX = (sv.positionDp - centerOffsetDp).coerceIn(0f, maxX)
+                                        newX = (sv.positionDp - centerOffsetXDp).coerceIn(0f, maxX)
                                     }
                                 } else {
                                     newX = rawNewX.coerceIn(0f, maxX)
-                                    val centerX = newX + centerOffsetDp
+                                    val centerX = newX + centerOffsetXDp
                                     val nearV = guideLines
                                         .filter { it.orientation == GuideOrientation.VERTICAL }
                                         .minByOrNull { abs(centerX - it.positionDp) }
                                     if (nearV != null && abs(centerX - nearV.positionDp) < SNAP_THRESHOLD_DP) {
                                         snappedVertical = nearV
                                         perpAccumX = 0f
-                                        newX = (nearV.positionDp - centerOffsetDp).coerceIn(0f, maxX)
+                                        newX = (nearV.positionDp - centerOffsetXDp).coerceIn(0f, maxX)
                                     }
                                 }
 
@@ -145,23 +155,23 @@ internal fun FreescreenIcon(
                                 if (sh != null) {
                                     perpAccumY += dyDp
                                     if (abs(perpAccumY) > BREAK_THRESHOLD_DP) {
-                                        newY = (sh.positionDp - centerOffsetDp + perpAccumY)
+                                        newY = (sh.positionDp - centerOffsetYDp + perpAccumY)
                                             .coerceIn(0f, maxY)
                                         snappedHorizontal = null
                                         perpAccumY = 0f
                                     } else {
-                                        newY = (sh.positionDp - centerOffsetDp).coerceIn(0f, maxY)
+                                        newY = (sh.positionDp - centerOffsetYDp).coerceIn(0f, maxY)
                                     }
                                 } else {
                                     newY = rawNewY.coerceIn(0f, maxY)
-                                    val centerY = newY + centerOffsetDp
+                                    val centerY = newY + centerOffsetYDp
                                     val nearH = guideLines
                                         .filter { it.orientation == GuideOrientation.HORIZONTAL }
                                         .minByOrNull { abs(centerY - it.positionDp) }
                                     if (nearH != null && abs(centerY - nearH.positionDp) < SNAP_THRESHOLD_DP) {
                                         snappedHorizontal = nearH
                                         perpAccumY = 0f
-                                        newY = (nearH.positionDp - centerOffsetDp).coerceIn(0f, maxY)
+                                        newY = (nearH.positionDp - centerOffsetYDp).coerceIn(0f, maxY)
                                     }
                                 }
 
