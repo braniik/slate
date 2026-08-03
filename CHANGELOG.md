@@ -1,5 +1,9 @@
 # Slate Changelog
 
+## 0.9 → 1.0 
+
+**Full Release** is here, besides preparing this project F-Droid, signing the release, and portrait locking there is **no other functional change from 0.9**
+
 ## 0.8.0 → 0.9
 
 **0.9** is the pre-release version that should be ready for F-Droid, I fixed a couple bugs from actually daily-driving slate, more fixes might come.

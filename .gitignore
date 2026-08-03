@@ -15,6 +15,10 @@
 local.properties
 *.apk
 
+*.jks
+*.keystore
+keystore.properties
+
 kls_database.db
 
 /.idea/deploymentTargetSelector.xml

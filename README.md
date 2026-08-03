@@ -2,8 +2,6 @@
 
 A FOSS minimal Android launcher. Clean by default, yours visually.
 
-⚠️ IN DEVELOPMENT ⚠️
-
 ## The idea
 
 Most launchers are too bloated and basically the same thing over and over, so I decided I'll try my take on a launcher :D. Slate does the opposite, you start with nothing and add what you want, where you want it. There will be no widget or news feeds, and definetly not AI. **You just launch apps.**
@@ -50,7 +48,13 @@ Freescreen mode is the centerpiece: your home screen is a blank **slate** where 
 
 ## Installation
 
-Slate is not on F-Droid yet. For now, build from source.
+### F-Droid
+
+(Submitted, pending review)
+
+### Github Release
+
+Grab the signed apk from the [latest release](https://github.com/braniik/slate/releases/latest)
 
 ### Build from source
 
@@ -136,6 +140,6 @@ git clone https://github.com/braniik/slate.git
 - [x] 0.6.1 — Icon rotation
 - [x] 0.7 — Polish and refinement
 - [x] 0.8 — Production readiness
-- [ ] 0.9 — Pre-release 
-- [ ] 1.0 — F-Droid release (and other stores, if Android stays open)
+- [x] 0.9 — Pre-release 
+- [x] 1.0 — F-Droid release (and other stores, if Android stays open)
 

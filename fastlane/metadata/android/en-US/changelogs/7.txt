@@ -1,0 +1,6 @@
+1.0 is the first stable release:
+
+• Portrait orientation locked
+• Release builds are now signed
+• No functional changes from 0.9 
+
