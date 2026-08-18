@@ -18,6 +18,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -55,6 +56,9 @@ fun AppDrawerScreen(
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
+    val configuration = LocalConfiguration.current
+    val screenWidthDp = configuration.screenWidthDp.toFloat()
+    val screenHeightDp = configuration.screenHeightDp.toFloat()
 
     val selectedIconPack by remember { context.iconPackFlow() }.collectAsState(initial = "")
     var packageGeneration by remember { mutableIntStateOf(0) }
@@ -104,7 +108,7 @@ fun AppDrawerScreen(
         homeAppsStore.update { stored ->
             if (targetMode == "freescreen") {
                 stored.mapIndexed { i, app ->
-                    val (x, y) = nextFreescreenPos(i)
+                    val (x, y) = gridFreescreenPos(i, screenWidthDp, screenHeightDp)
                     app.copy(xPos = x, yPos = y)
                 }
             } else {
@@ -172,7 +176,7 @@ fun AppDrawerScreen(
                             homeAppsStore.update { stored ->
                                 if (stored.any { it.key == info.key }) stored
                                 else {
-                                    val (x, y) = nextFreescreenPos(stored.size)
+                                    val (x, y) = centerFreescreenPos(screenWidthDp, screenHeightDp)
                                     stored + HomeScreenApp(
                                         packageName = info.packageName,
                                         userSerial = info.userSerial,
@@ -310,11 +314,29 @@ private fun handleAppTap(
     }
 }
 
-private fun nextFreescreenPos(count: Int): Pair<Float, Float> {
-    val cols = 4
-    val stepX = 90f
-    val stepY = 110f
-    return (16f + (count % cols) * stepX) to (16f + (count / cols) * stepY)
+private const val FOOTPRINT_DP = 72f
+private const val MARGIN_DP = 16f
+
+internal fun centerFreescreenPos(
+    widthDp: Float,
+    heightDp: Float,
+    footprintDp: Float = FOOTPRINT_DP
+): Pair<Float, Float> =
+    ((widthDp - footprintDp) / 2f).coerceAtLeast(0f) to
+            ((heightDp - footprintDp) / 2f).coerceAtLeast(0f)
+
+internal fun gridFreescreenPos(
+    index: Int,
+    widthDp: Float,
+    heightDp: Float,
+    footprintDp: Float = FOOTPRINT_DP
+): Pair<Float, Float> {
+    val stepX = footprintDp + 18f
+    val stepY = footprintDp + 38f
+    val cols = (((widthDp - 2 * MARGIN_DP) / stepX).toInt()).coerceAtLeast(1)
+    val rows = (((heightDp - 2 * MARGIN_DP) / stepY).toInt()).coerceAtLeast(1)
+    val slot = index % (cols * rows)
+    return (MARGIN_DP + (slot % cols) * stepX) to (MARGIN_DP + (slot / cols) * stepY)
 }
 
 @Composable
