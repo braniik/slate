@@ -50,7 +50,7 @@ Freescreen mode is the centerpiece: your home screen is a blank **slate** where 
 
 ### F-Droid
 
-(Submitted, pending review)
+(Merged, waiting to be actually listed on F-Droid)
 
 ### Github Release
 
