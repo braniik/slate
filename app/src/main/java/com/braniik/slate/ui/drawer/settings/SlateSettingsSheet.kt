@@ -29,6 +29,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -49,12 +50,15 @@ import com.braniik.slate.data.WallpaperConfig
 import com.braniik.slate.data.discoverIconPacks
 import com.braniik.slate.data.isDefaultLauncher
 import com.braniik.slate.data.requestDefaultLauncherIntent
-import com.braniik.slate.data.loadWallpaperBitmap
+import com.braniik.slate.data.InstalledIconPack
+import com.braniik.slate.data.LocalWallpaperImage
 import com.braniik.slate.ui.theme.SlateDanger
 import com.braniik.slate.ui.theme.SlateOnBackground
 import com.braniik.slate.ui.theme.SlateScrim
 import com.braniik.slate.ui.theme.SlateSubtle
 import com.braniik.slate.ui.theme.SlateSurface
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 @Composable
 fun SlateSettingsSheet(
@@ -231,7 +235,10 @@ fun SlateSettingsSheet(
                 Spacer(Modifier.height(24.dp))
                 SectionLabel("icon pack")
 
-                val iconPacks = remember { discoverIconPacks(context) }
+                var iconPacks by remember { mutableStateOf<List<InstalledIconPack>?>(null) }
+                LaunchedEffect(Unit) {
+                    iconPacks = withContext(Dispatchers.IO) { discoverIconPacks(context) }
+                }
 
                 OrientationOption(
                     "none",
@@ -239,7 +246,7 @@ fun SlateSettingsSheet(
                     selectedIconPack.isBlank()
                 ) { onIconPackChange("") }
 
-                iconPacks.forEach { pack ->
+                iconPacks.orEmpty().forEach { pack ->
                     OrientationOption(
                         pack.label,
                         pack.packageName,
@@ -247,7 +254,7 @@ fun SlateSettingsSheet(
                     ) { onIconPackChange(pack.packageName) }
                 }
 
-                if (iconPacks.isEmpty()) {
+                if (iconPacks?.isEmpty() == true) {
                     Text(
                         "no icon packs installed",
                         fontSize = 11.sp,
@@ -418,7 +425,7 @@ private fun OrientationOption(
 @Composable
 private fun WallpaperPreviewRow(config: WallpaperConfig) {
     if (config.mode == "image" && config.imagePath.isNotBlank()) {
-        val bitmap = remember(config.imagePath) { loadWallpaperBitmap(config.imagePath) }
+        val bitmap = LocalWallpaperImage.current
         if (bitmap != null) {
             Image(
                 bitmap = bitmap,

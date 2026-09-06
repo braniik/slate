@@ -53,6 +53,8 @@ import com.braniik.slate.data.WallpaperConfig
 import com.braniik.slate.data.extractWallpaperColors
 import com.braniik.slate.data.loadWallpaperBitmap
 import com.braniik.slate.data.saveWallpaperImage
+import com.braniik.slate.data.pruneWallpaperImages
+import com.braniik.slate.data.LocalWallpaperImage
 import com.braniik.slate.ui.theme.SlateBackground
 import com.braniik.slate.ui.theme.SlateOnBackground
 import com.braniik.slate.ui.theme.SlateScrim
@@ -87,13 +89,9 @@ fun WallpaperPicker(
 
     var imagePath by remember { mutableStateOf(current.imagePath) }
     var imageDominantColor by remember { mutableIntStateOf(current.imageDominantColor) }
-    var previewBitmap by remember {
-        mutableStateOf(
-            if (current.mode == "image" && current.imagePath.isNotBlank())
-                loadWallpaperBitmap(current.imagePath)
-            else null
-        )
-    }
+    val liveWallpaper = LocalWallpaperImage.current
+    var pickedBitmap by remember { mutableStateOf<ImageBitmap?>(null) }
+    val previewBitmap = if (imagePath == current.imagePath) liveWallpaper else pickedBitmap
 
     val imagePicker = rememberLauncherForActivityResult(
         ActivityResultContracts.GetContent()
@@ -103,9 +101,10 @@ fun WallpaperPicker(
                 val path = saveWallpaperImage(context, it) ?: return@launch
                 val colors = extractWallpaperColors(path)
                 val bmp = loadWallpaperBitmap(path)
+                pruneWallpaperImages(context, setOf(current.imagePath, path))
                 imagePath = path
                 imageDominantColor = colors.dominant
-                previewBitmap = bmp
+                pickedBitmap = bmp
             }
         }
     }

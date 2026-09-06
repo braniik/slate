@@ -14,6 +14,7 @@ import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.IntSize
 import com.braniik.slate.data.LocalToolbarTextColor
+import com.braniik.slate.data.LocalWallpaperImage
 import com.braniik.slate.data.LocalWallpaperTextColor
 import com.braniik.slate.data.WallpaperConfig
 import com.braniik.slate.data.launcherSettingsFlow
@@ -90,7 +91,8 @@ fun SlateApp(homeResetSignal: Int) {
     ) {
         CompositionLocalProvider(
             LocalWallpaperTextColor provides wallpaper.textColor(),
-            LocalToolbarTextColor provides toolbarTextColor
+            LocalToolbarTextColor provides toolbarTextColor,
+            LocalWallpaperImage provides imageBitmap
         ) {
             when {
                 settings == null -> {}

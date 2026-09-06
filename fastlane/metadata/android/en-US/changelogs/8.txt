@@ -1,0 +1,8 @@
+1.0.1 bugfix release:
+
+• Freescreen icons follow your finger on every drag, not just the first
+• Dragging icons now requires edit mode, like list mode
+• Changing the image wallpaper a second time applies immediately
+• Cancelling the wallpaper picker no longer overwrites your wallpaper
+• Far lower memory use with many apps installed
+• Settings and the wallpaper picker open without stutter

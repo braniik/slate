@@ -30,6 +30,8 @@ import androidx.compose.ui.unit.sp
 import com.braniik.slate.data.LocalWallpaperTextColor
 import com.braniik.slate.ui.theme.SlateSubtle
 
+private const val PICKER_ICON_DP = 32
+
 @Composable
 internal fun AddAppsOverlay(
     apps: List<AppInfo>,
@@ -60,7 +62,7 @@ internal fun AddAppsOverlay(
                 verticalArrangement = Arrangement.spacedBy(2.dp),
                 modifier = Modifier.fillMaxSize()
             ) {
-                items(apps) { app ->
+                items(apps, key = { it.key }) { app ->
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(16.dp),
@@ -71,10 +73,10 @@ internal fun AddAppsOverlay(
                             .padding(vertical = 10.dp, horizontal = 4.dp)
                     ) {
                         Image(
-                            bitmap = app.icon,
+                            bitmap = rememberAppIcon(app, PICKER_ICON_DP),
                             contentDescription = app.label,
                             modifier = Modifier
-                                .size(32.dp)
+                                .size(PICKER_ICON_DP.dp)
                                 .clip(CircleShape)
                         )
                         Text(

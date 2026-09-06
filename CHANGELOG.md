@@ -1,5 +1,17 @@
 # Slate Changelog
 
+## 1.0 → 1.0.1
+
+**1.0.1** is the first bugfix release after landing on F-Droid, no new features:
+ 
+- **Second drag works:** In freescreen, the second and every later drag of an icon moved it only on release. 
+- **Drag is edit-only:** Freescreen icons no longer move in normal mode, matching list mode and the toolbar description.
+- **Snap math lives once:** The per-axis guide snapping (stick, slide, break free) that was duplicated for X and Y is a single `AxisSnap` class.
+- **Image wallpaper updates every time:** Picking a second image wrote over the same `wallpaper.webp`, so the stored path never changed and the in-window wallpaper only reloaded on restart. Each pick now gets a unique filename and unused files are pruned on save and on dismiss. Cancelling the picker after choosing an image no longer destroys the wallpaper you had.
+- **Icons rasterize on demand:** Every installed app was rendered to a 96dp bitmap at load, ~330KB each on a 3x screen, whether or not it was on the home screen. `AppInfo` now keeps the `Drawable` and renders bitmaps at the size actually requested, once per size. The picker draws at 32dp, home icons at their own size.
+- **Settings open without decoding:** The settings sheet and wallpaper picker decoded the full wallpaper image on the main thread during composition. Both now reuse the bitmap MainActivity already holds via `LocalWallpaperImage`. Icon pack discovery moved off the main thread as well.
+
+
 ## 0.9 → 1.0 
 
 **Full Release** is here, besides preparing this project F-Droid, signing the release, and portrait locking there is **no other functional change from 0.9**

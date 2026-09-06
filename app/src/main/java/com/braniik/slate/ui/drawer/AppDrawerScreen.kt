@@ -28,6 +28,7 @@ import com.braniik.slate.data.LauncherSettings
 import com.braniik.slate.data.packageChangesFlow
 import com.braniik.slate.data.WallpaperConfig
 import com.braniik.slate.data.applySystemWallpaper
+import com.braniik.slate.data.pruneWallpaperImages
 import com.braniik.slate.data.guideLinesFlow
 import com.braniik.slate.data.HomeAppsStore
 import com.braniik.slate.data.iconPackFlow
@@ -47,7 +48,9 @@ import com.braniik.slate.ui.drawer.list.ListEditDialog
 import com.braniik.slate.ui.drawer.settings.SlateSettingsSheet
 import com.braniik.slate.ui.drawer.settings.WallpaperPicker
 import com.braniik.slate.ui.theme.SlateSubtle
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 @Composable
 fun AppDrawerScreen(
@@ -290,10 +293,18 @@ fun AppDrawerScreen(
                     scope.launch {
                         context.saveWallpaperConfig(config)
                         applySystemWallpaper(context, config)
+                        withContext(Dispatchers.IO) {
+                            pruneWallpaperImages(context, setOf(config.imagePath))
+                        }
                     }
                     ui.showWallpaperPicker = false
                 },
-                onDismiss = { ui.showWallpaperPicker = false }
+                onDismiss = {
+                    scope.launch(Dispatchers.IO) {
+                        pruneWallpaperImages(context, setOf(wallpaperConfig.imagePath))
+                    }
+                    ui.showWallpaperPicker = false
+                }
             )
         }
     }

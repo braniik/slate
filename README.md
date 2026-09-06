@@ -21,7 +21,7 @@ Freescreen mode is the centerpiece: your home screen is a blank **slate** where 
 
 ## Features
 
-- **Freescreen mode:** Drag icons to any position on screen.
+- **Freescreen mode:** In edit mode, drag icons to any position on screen.
 - **List mode:** Vertical or horizontal scrolling list. Drag-to-reorder in edit mode.
 - **Guide lines:** In edit mode, swipe from screen edges to create guide lines. Icons snap to guides and slide along them.
 - **Wallpapers:** Solid color, gradient (8 directions), or image. Auto-contrast text adapts to whatever you set.
@@ -50,7 +50,7 @@ Freescreen mode is the centerpiece: your home screen is a blank **slate** where 
 
 ### F-Droid
 
-(Merged, waiting to be actually listed on F-Droid)
+You can download it from [here](https://f-droid.org/en/packages/com.braniik.slate/)
 
 ### Github Release
 
@@ -89,15 +89,16 @@ git clone https://github.com/braniik/slate.git
 │   ├── PackageChanges.kt          — flow of app/profile changes via LauncherApps.Callback
 │   ├── SystemWallpaperApplier.kt  — renders wallpaper config to the system wallpaper
 │   ├── WallpaperConfig.kt         — wallpaper mode/colors/gradient, per-edge text color for solid/gradient
-│   ├── WallpaperImageStore.kt     — image save/load/compress, palette extraction
+│   ├── WallpaperImageStore.kt     — image save (unique file per pick)/load/compress/prune, palette extraction
 │   └── WallpaperSampler.kt        — image wallpaper edge-strip sampling behind the toolbar and system bars
 └── ui/
     ├── SystemBars.kt               — status/navigation bar icon appearance (light vs dark)
     ├── drawer/
     │   ├── AddAppsOverlay.kt       — scrollable picker for adding apps to home
     │   ├── AppActions.kt           — acting on apps: launch, open the system App Info sheet
+    │   ├── AppIcon.kt              — rememberAppIcon: an app's icon rasterized once per size, reused across recompositions
     │   ├── AppDrawerScreen.kt      — wires modes, dialogs, back handling, home reset, every home list edit goes through HomeAppsStore
-    │   ├── AppLoader.kt            — LauncherApps query across profiles, badged work icons, unmasked rasterization
+    │   ├── AppLoader.kt            — LauncherApps query across profiles; AppInfo holds the Drawable and renders badged, unmasked bitmaps on demand
     │   ├── HomeMode.kt             — NORMAL, ADDING, EDITING, DELETING enum
     │   ├── HomeUiState.kt          — ephemeral mode/overlay state, its two transitions: back (peel topmost) and home (reset)
     │   ├── Toolbar.kt              — position-aware toolbar
@@ -106,7 +107,7 @@ git clone https://github.com/braniik/slate.git
     │   │   ├── EditDialogShell.kt  — reusable dialog frame with save/close
     │   │   └── IconShape.kt        — shape definitions and picker
     │   ├── freescreen/
-    │   │   ├── FreeScreenIcon.kt       — draggable icon with per-axis guide line snapping
+    │   │   ├── FreeScreenIcon.kt       — draggable icon (edit mode), AxisSnap handles guide line snapping per axis
     │   │   ├── FreescreenEditDialog.kt — per-icon size, shape, rotation, and label toggle
     │   │   ├── GuideLineLayer.kt       — renders, creates, drags, and deletes guide lines
     │   │   └── HomeFreescreen.kt       — freescreen canvas, layers guides behind icons
@@ -142,4 +143,6 @@ git clone https://github.com/braniik/slate.git
 - [x] 0.8 — Production readiness
 - [x] 0.9 — Pre-release 
 - [x] 1.0 — F-Droid release (and other stores, if Android stays open)
+- [x] 1.0.1 — Bugfixes from the first weeks on F-Droid
+- [ ] 1.1  — Potential future QoL feature update bundle
 

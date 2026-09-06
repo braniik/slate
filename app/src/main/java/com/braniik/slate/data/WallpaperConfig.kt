@@ -14,6 +14,7 @@ import org.json.JSONObject
 
 val LocalWallpaperTextColor = compositionLocalOf { LightText }
 val LocalToolbarTextColor = compositionLocalOf { LightText }
+val LocalWallpaperImage = compositionLocalOf<ImageBitmap?> { null }
 
 data class WallpaperConfig(
     val mode: String = "solid",
