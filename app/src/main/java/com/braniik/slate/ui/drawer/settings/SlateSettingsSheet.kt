@@ -31,6 +31,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -47,7 +48,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.braniik.slate.data.WallpaperConfig
+import com.braniik.slate.data.currentHomeAppLabel
 import com.braniik.slate.data.discoverIconPacks
+import com.braniik.slate.data.homeSettingsIntent
+import com.braniik.slate.data.installedHomeAppCount
 import com.braniik.slate.data.isDefaultLauncher
 import com.braniik.slate.data.requestDefaultLauncherIntent
 import com.braniik.slate.data.InstalledIconPack
@@ -112,22 +116,7 @@ fun SlateSettingsSheet(
 
                 Spacer(Modifier.height(8.dp))
 
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clip(RoundedCornerShape(8.dp))
-                        .background(SlateSubtle.copy(alpha = 0.3f))
-                        .clickable { confirmSwitch = true }
-                        .padding(vertical = 14.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        "change to $targetMode",
-                        fontSize = 13.sp,
-                        color = SlateOnBackground,
-                        letterSpacing = 1.sp
-                    )
-                }
+                SettingsButton("change to $targetMode") { confirmSwitch = true }
 
                 if (layoutMode == "list") {
                     Spacer(Modifier.height(24.dp))
@@ -172,64 +161,64 @@ fun SlateSettingsSheet(
 
                 Spacer(Modifier.height(8.dp))
 
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clip(RoundedCornerShape(8.dp))
-                        .background(SlateSubtle.copy(alpha = 0.3f))
-                        .clickable { onOpenWallpaperPicker() }
-                        .padding(vertical = 14.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        "customize",
-                        fontSize = 13.sp,
-                        color = SlateOnBackground,
-                        letterSpacing = 1.sp
-                    )
-                }
+                SettingsButton("customize") { onOpenWallpaperPicker() }
 
                 Spacer(Modifier.height(24.dp))
-                SectionLabel("default launcher")
+                SectionLabel("home app")
 
                 val context = LocalContext.current
                 var isDefault by remember { mutableStateOf(isDefaultLauncher(context)) }
-                val roleRequest = rememberLauncherForActivityResult(
-                    ActivityResultContracts.StartActivityForResult()
-                ) { isDefault = isDefaultLauncher(context) }
+                var homeAppCount by remember { mutableIntStateOf(1) }
+                var currentHome by remember { mutableStateOf<String?>(null) }
+                var homeGeneration by remember { mutableIntStateOf(0) }
 
-                if (isDefault) {
+                LaunchedEffect(homeGeneration) {
+                    val snapshot = withContext(Dispatchers.IO) {
+                        installedHomeAppCount(context) to currentHomeAppLabel(context)
+                    }
+                    homeAppCount = snapshot.first
+                    currentHome = snapshot.second
+                }
+
+                val systemScreen = rememberLauncherForActivityResult(
+                    ActivityResultContracts.StartActivityForResult()
+                ) {
+                    isDefault = isDefaultLauncher(context)
+                    homeGeneration++
+                }
+
+                Text(
+                    currentHome?.let { "currently $it" } ?: "the system asks every time",
+                    fontSize = 11.sp,
+                    color = SlateSubtle,
+                    modifier = Modifier.padding(bottom = 8.dp, start = 4.dp)
+                )
+
+                if (!isDefault) {
+                    SettingsButton("set slate as default") {
+                        requestDefaultLauncherIntent(context)?.let { systemScreen.launch(it) }
+                    }
+                    Spacer(Modifier.height(8.dp))
+                }
+
+                if (homeAppCount > 1) {
+                    SettingsButton("switch home app") {
+                        homeSettingsIntent(context)?.let { systemScreen.launch(it) }
+                    }
                     Text(
-                        "slate is your default home app",
+                        "opens the system picker. android has no way for one launcher to " + "hand the role to another, so the choice stays with you.",
+                        fontSize = 11.sp,
+                        color = SlateSubtle,
+                        lineHeight = 16.sp,
+                        modifier = Modifier.padding(top = 8.dp, start = 4.dp)
+                    )
+                } else {
+                    Text(
+                        "slate is the only home app installed",
                         fontSize = 11.sp,
                         color = SlateSubtle,
                         modifier = Modifier.padding(vertical = 8.dp, horizontal = 4.dp)
                     )
-                } else {
-                    Text(
-                        "pressing home won't open slate until it's the default",
-                        fontSize = 11.sp,
-                        color = SlateSubtle,
-                        modifier = Modifier.padding(bottom = 8.dp, start = 4.dp)
-                    )
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clip(RoundedCornerShape(8.dp))
-                            .background(SlateSubtle.copy(alpha = 0.3f))
-                            .clickable {
-                                requestDefaultLauncherIntent(context)?.let { roleRequest.launch(it) }
-                            }
-                            .padding(vertical = 14.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            "set as default",
-                            fontSize = 13.sp,
-                            color = SlateOnBackground,
-                            letterSpacing = 1.sp
-                        )
-                    }
                 }
 
                 Spacer(Modifier.height(24.dp))
@@ -378,6 +367,21 @@ private fun TitleField(value: String, onValueChange: (String) -> Unit) {
                 inner()
             }
         )
+    }
+}
+
+@Composable
+private fun SettingsButton(label: String, onClick: () -> Unit) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(8.dp))
+            .background(SlateSubtle.copy(alpha = 0.3f))
+            .clickable { onClick() }
+            .padding(vertical = 14.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(label, fontSize = 13.sp, color = SlateOnBackground, letterSpacing = 1.sp)
     }
 }
 

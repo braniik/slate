@@ -21,6 +21,10 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -28,6 +32,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.braniik.slate.data.LocalWallpaperTextColor
+import com.braniik.slate.ui.drawer.common.SearchField
 import com.braniik.slate.ui.theme.SlateSubtle
 
 private const val PICKER_ICON_DP = 32
@@ -38,6 +43,9 @@ internal fun AddAppsOverlay(
     onAdd: (AppInfo) -> Unit,
     onClose: () -> Unit
 ) {
+    var query by remember { mutableStateOf("") }
+    val visible = apps.matching(query)
+
     Column(modifier = Modifier.fillMaxSize()) {
         Row(
             modifier = Modifier
@@ -52,9 +60,23 @@ internal fun AddAppsOverlay(
             }
         }
 
-        if (apps.isEmpty()) {
+        if (apps.isNotEmpty()) {
+            SearchField(
+                value = query,
+                onValueChange = { query = it },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 20.dp, vertical = 4.dp)
+            )
+        }
+
+        if (visible.isEmpty()) {
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                Text("all apps added", fontSize = 14.sp, color = SlateSubtle)
+                Text(
+                    if (apps.isEmpty()) "all apps added" else "nothing matches",
+                    fontSize = 14.sp,
+                    color = SlateSubtle
+                )
             }
         } else {
             LazyColumn(
@@ -62,7 +84,7 @@ internal fun AddAppsOverlay(
                 verticalArrangement = Arrangement.spacedBy(2.dp),
                 modifier = Modifier.fillMaxSize()
             ) {
-                items(apps, key = { it.key }) { app ->
+                items(visible, key = { it.key }) { app ->
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(16.dp),

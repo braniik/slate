@@ -1,0 +1,6 @@
+1.1 is a QoL Bundle update.
+
+- Search bar when adding apps so you can find one rather than scrolling past all of them.
+- Guide patterns: In freescreen edit mode, tap a region and split it in half.
+- Multi-select: Drag a box over empty canvas to select multiple icons and then set size, shape, rotation or labels for all of them at once.
+- Settings now displays your current home app and a link to the system picker.

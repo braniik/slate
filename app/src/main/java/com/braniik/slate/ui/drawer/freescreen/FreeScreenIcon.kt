@@ -42,7 +42,7 @@ import com.braniik.slate.ui.drawer.rememberAppIcon
 import com.braniik.slate.ui.theme.SlateDanger
 import kotlin.math.abs
 
-private const val PADDING_DP = 8f
+internal const val ICON_PADDING_DP = 8f
 
 @Composable
 internal fun FreescreenIcon(
@@ -51,6 +51,7 @@ internal fun FreescreenIcon(
     containerSize: IntSize,
     mode: HomeMode,
     guideLines: List<GuideLine> = emptyList(),
+    selected: Boolean = false,
     onTap: () -> Unit,
     onLongPress: () -> Unit = {},
     onPositionChanged: (Float, Float) -> Unit
@@ -69,7 +70,7 @@ internal fun FreescreenIcon(
     val currentIconSizeDp by rememberUpdatedState(homeApp.iconSizeDp)
     val currentOnPositionChanged by rememberUpdatedState(onPositionChanged)
 
-    val iconFootprintDp = homeApp.iconSizeDp + 2 * PADDING_DP
+    val iconFootprintDp = homeApp.iconSizeDp + 2 * ICON_PADDING_DP
     var measuredWidthDp by remember { mutableFloatStateOf(iconFootprintDp) }
     var measuredHeightDp by remember { mutableFloatStateOf(iconFootprintDp) }
 
@@ -85,11 +86,17 @@ internal fun FreescreenIcon(
             }
             .offset { IntOffset(localX.dp.roundToPx(), localY.dp.roundToPx()) }
             .then(
-                if (mode == HomeMode.DELETING) {
-                    Modifier
+                when {
+                    mode == HomeMode.DELETING -> Modifier
                         .clip(RoundedCornerShape(8.dp))
                         .border(1.dp, SlateDanger, RoundedCornerShape(8.dp))
-                } else Modifier
+
+                    selected -> Modifier
+                        .clip(RoundedCornerShape(8.dp))
+                        .border(1.dp, LocalWallpaperTextColor.current, RoundedCornerShape(8.dp))
+
+                    else -> Modifier
+                }
             )
             .pointerInput(homeApp.key) {
                 detectTapGestures(
@@ -125,7 +132,7 @@ internal fun FreescreenIcon(
                                 val maxX = (containerWidthDp - measuredWidthDp).coerceAtLeast(0f)
                                 val maxY = (containerHeightDp - measuredHeightDp).coerceAtLeast(0f)
                                 val centerOffsetXDp = measuredWidthDp / 2f
-                                val centerOffsetYDp = PADDING_DP + currentIconSizeDp / 2f
+                                val centerOffsetYDp = ICON_PADDING_DP + currentIconSizeDp / 2f
 
                                 localX = snapX.move(
                                     raw = localX + dxDp, delta = dxDp, centerOffset = centerOffsetXDp,
@@ -140,7 +147,7 @@ internal fun FreescreenIcon(
                     }
                 } else Modifier
             )
-            .padding(PADDING_DP.dp)
+            .padding(ICON_PADDING_DP.dp)
     ) {
         Image(
             bitmap = icon,

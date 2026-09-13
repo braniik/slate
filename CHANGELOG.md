@@ -1,5 +1,18 @@
 # Slate Changelog
 
+## 1.0.1 → 1.1
+ 
+**1.1** is a quality-of-life bundle. Four features, two of were feature requests from people actually using Slate:
+ 
+- **Search when adding apps:** The picker has a search bar now.
+- **Guide patterns:** A new border halving icon in freescreen edit mode. Tap a region of the screen, it highlights, and two buttons cut it in half along either axis. 
+Tap a half and halve it again to quarter it. And so on. Regions stop offering to split once the halves would fall under 56dp.
+- **Multi-select:** In freescreen edit mode, drag a box across empty canvas to select icons, the way you're probably used to on Windows or KDE Plasma. Selected icons get an outline. 
+The Tune button then applies to the selection instead of to everything. Empty selection still means all apps, so blanket-set is unchanged.
+- **Home app switching:** Settings gains a **home app** section that names whichever launcher currently has the role and offers a shortcut straight to the system screen that reassigns it. 
+This is a shortcut and not a switch, the button only appears when there is something to switch to.
+
+
 ## 1.0 → 1.0.1
 
 **1.0.1** is the first bugfix release after landing on F-Droid, no new features:

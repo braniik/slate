@@ -34,6 +34,10 @@ Freescreen mode is the centerpiece: your home screen is a blank **slate** where 
 - **Icon packs:** Supports all major pack formats (ADW, Nova, Apex, GO, Tesla)
 - **Work profiles:** Apps from managed profiles (Shelter, Island) appear alongside personal apps, badged with the system work indicator, and launch into the right profile.
 - **Blanket-set:** Apply icon size, shape, rotation, or label settings to every app at once.
+- **Multi-select:** In freescreen edit mode, drag a box across empty canvas to select several icons, then set their properties in one go. Tap icons to add or drop them from the selection.
+- **Guide patterns:** In freescreen edit mode, tap a region and halve it. Symmetry without measuring by eye.
+- **Search when adding:** Filter the app picker.
+- **Home app switching:** Jump straight to the system screen that picks your home app.
 - **You choose what shows up.** Tap + to add apps, tap the trash to remove. Nothing appears unless you put it there.
 
 ## Toolbar modes
@@ -41,12 +45,17 @@ Freescreen mode is the centerpiece: your home screen is a blank **slate** where 
 | Icon | Mode | What it does |
 |------|------|-------------|
 | Plus | Adding | Browse installed apps and add them to your home screen |
-| Pen | Editing | Tap an app to customize it, drag to reposition (freescreen) or reorder (list). Create and manage guide lines in freescreen |
+| Pen | Editing | Tap an app to customize it, drag to reposition (freescreen) or reorder (list). Create and manage guide lines in freescreen. Drag across empty canvas to multi-select |
+| Border | Guide patterns | Appears in freescreen edit mode. Tap a region to halve it vertically or horizontally |
 | Bin | Deleting | Tap an app to remove it from the home screen |
 | Cog | Settings | Switch layout mode, change list orientation, set toolbar position, customize wallpaper, select icon pack |
-| Tune | Blanket-set | Appears in edit mode. Set icon size/shape/rotation/labels for all apps at once |
+| Tune | Blanket-set | Appears in edit mode. Set icon size/shape/rotation/labels for every app at once, or for just the current multiselection |
 
 ## Installation
+
+## Installation
+
+> **Xiaomi / HyperOS users:** setting any third-party launcher, including Slate, as default forces your phone back to three-button navigation. See [Device quirks](#device-quirks).
 
 ### F-Droid
 
@@ -82,10 +91,11 @@ git clone https://github.com/braniik/slate.git
 ├── data/
 │   ├── Contrast.kt                — WCAG relative luminance, the single light/dark foreground decision
 │   ├── GuideLine.kt               — guide line model, JSON serialization, DataStore persistence
+│   ├── GuidePattern.kt            — the grid guide lines carve out of the screen, and halving a region of it
 │   ├── HomeAppsStore.kt           — runtime owner of the home app list: edits apply in memory synchronously, DataStore trails as a write-behind mirror
 │   ├── IconPackManager.kt         — icon pack discovery, appfilter.xml parsing, icon resolution
 │   ├── LauncherPreferences.kt     — DataStore keys, HomeScreenApp model (package + profile identity), settings flows
-│   ├── LauncherRole.kt            — HOME role check and request intent (RoleManager)
+│   ├── LauncherRole.kt            — the HOME role: who holds it, requesting it, and the system screen that reassigns it
 │   ├── PackageChanges.kt          — flow of app/profile changes via LauncherApps.Callback
 │   ├── SystemWallpaperApplier.kt  — renders wallpaper config to the system wallpaper
 │   ├── WallpaperConfig.kt         — wallpaper mode/colors/gradient, per-edge text color for solid/gradient
@@ -94,23 +104,28 @@ git clone https://github.com/braniik/slate.git
 └── ui/
     ├── SystemBars.kt               — status/navigation bar icon appearance (light vs dark)
     ├── drawer/
-    │   ├── AddAppsOverlay.kt       — scrollable picker for adding apps to home
+    │   ├── AddAppsOverlay.kt       — searchable picker for adding apps to home
     │   ├── AppActions.kt           — acting on apps: launch, open the system App Info sheet
+    │   ├── AppSearch.kt            — match ranking for the picker's search bar
     │   ├── AppIcon.kt              — rememberAppIcon: an app's icon rasterized once per size, reused across recompositions
     │   ├── AppDrawerScreen.kt      — wires modes, dialogs, back handling, home reset, every home list edit goes through HomeAppsStore
     │   ├── AppLoader.kt            — LauncherApps query across profiles; AppInfo holds the Drawable and renders badged, unmasked bitmaps on demand
     │   ├── HomeMode.kt             — NORMAL, ADDING, EDITING, DELETING enum
-    │   ├── HomeUiState.kt          — ephemeral mode/overlay state, its two transitions: back (peel topmost) and home (reset)
+    │   ├── HomeUiState.kt          — ephemeral mode/overlay/selection state, its two transitions: back (peel topmost) and home (reset)
     │   ├── Toolbar.kt              — position-aware toolbar
     │   ├── common/
     │   │   ├── BlanketSetDialog.kt — bulk-set icon size/shape/rotation/labels for all apps
     │   │   ├── EditDialogShell.kt  — reusable dialog frame with save/close
-    │   │   └── IconShape.kt        — shape definitions and picker
+    │   │   ├── IconShape.kt        — shape definitions and picker
+    │   │   └── SearchField.kt      — single-line input tinted by the wallpaper's own foreground
     │   ├── freescreen/
     │   │   ├── FreeScreenIcon.kt       — draggable icon (edit mode), AxisSnap handles guide line snapping per axis
     │   │   ├── FreescreenEditDialog.kt — per-icon size, shape, rotation, and label toggle
-    │   │   ├── GuideLineLayer.kt       — renders, creates, drags, and deletes guide lines
-    │   │   └── HomeFreescreen.kt       — freescreen canvas, layers guides behind icons
+    │   │   ├── GuideDraw.kt            — the one place guide lines get painted
+    │   │   ├── GuideLineLayer.kt       — creates, drags, and deletes guide lines
+    │   │   ├── GuidePatternLayer.kt    — tap a region and halve it
+    │   │   ├── MarqueeLayer.kt         — drag-a-box multi-select over empty canvas
+    │   │   └── HomeFreescreen.kt       — freescreen canvas, orders the gesture layers
     │   ├── list/
     │   │   ├── HomeList.kt         — vertical/horizontal list with drag-to-reorder
     │   │   └── ListEditDialog.kt   — per-item text size, icon size, shape, rotation, icon toggle
@@ -144,5 +159,14 @@ git clone https://github.com/braniik/slate.git
 - [x] 0.9 — Pre-release 
 - [x] 1.0 — F-Droid release (and other stores, if Android stays open)
 - [x] 1.0.1 — Bugfixes from the first weeks on F-Droid
-- [ ] 1.1  — Potential future QoL feature update bundle
+- [x] 1.1 — QoL bundle: picker search, guide patterns, multi-select, home app switching
 
+## Contributing
+
+Contributions are welcome, see [CONTRIBUTING.md](CONTRIBUTING.md) for scope, build instructions, and style. If you're unsure whether an idea fits, open a nissue first.
+
+## Device quirks
+
+- **MIUI / HyperOS:** Xiaomi builds gesture navigation into its own System Launcher, so setting any third-party launcher as default forces the phone back to three-button navigation. 
+This has been the case since MIUI 12 and still holds on HyperOS. No launcher can work around it. See [Niagara Launcher's notes](https://help.niagaralauncher.app/article/7-gesture-navigation).
+Slate's settings has a shortcut to the system home app picker under **home app** if you want to switch back.

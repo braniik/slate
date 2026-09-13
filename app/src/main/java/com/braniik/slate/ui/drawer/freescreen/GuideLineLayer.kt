@@ -29,7 +29,6 @@ import kotlin.math.abs
 private val EDGE_ZONE = 32.dp
 private val GUIDE_HIT = 20.dp
 private val DELETE_THRESHOLD = 30.dp
-private val LINE_WIDTH = 1.dp
 
 @Composable
 internal fun GuideLineLayer(
@@ -49,18 +48,7 @@ internal fun GuideLineLayer(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .drawBehind {
-                val strokePx = LINE_WIDTH.toPx()
-                localGuides.forEach { guide ->
-                    val posPx = with(density) { guide.positionDp.dp.toPx() }
-                    when (guide.orientation) {
-                        GuideOrientation.VERTICAL ->
-                            drawLine(lineColor, Offset(posPx, 0f), Offset(posPx, size.height), strokePx)
-                        GuideOrientation.HORIZONTAL ->
-                            drawLine(lineColor, Offset(0f, posPx), Offset(size.width, posPx), strokePx)
-                    }
-                }
-            }
+            .drawBehind { drawGuideLines(localGuides, lineColor) }
             .pointerInput(guideLines) {
                 awaitEachGesture {
                     val down: PointerInputChange = awaitFirstDown(requireUnconsumed = false)

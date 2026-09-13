@@ -126,6 +126,17 @@ fun AppDrawerScreen(
         if (ui.mode == HomeMode.NORMAL) openAppInfo(context, app.packageName, app.userSerial)
     }
 
+    val onTap: (HomeScreenApp) -> Unit = { app ->
+        when (ui.mode) {
+            HomeMode.NORMAL -> launchApp(context, app.packageName, app.userSerial)
+            HomeMode.EDITING ->
+                if (ui.selection.isEmpty()) ui.editingKey = app.key else ui.toggleSelected(app.key)
+            HomeMode.DELETING ->
+                homeAppsStore.update { stored -> stored.filter { it.key != app.key } }
+            HomeMode.ADDING -> {}
+        }
+    }
+
     val pos = settings.toolbarPosition
     val sideToolbar = pos == "left" || pos == "right"
 
@@ -135,14 +146,12 @@ fun AppDrawerScreen(
             showSettings = ui.showSettings,
             position = pos,
             title = settings.toolbarTitle,
-            onModeChange = { newMode ->
-                ui.showSettings = false
-                ui.mode = if (ui.mode == newMode) HomeMode.NORMAL else newMode
-            },
-            onSettingsToggle = {
-                ui.showSettings = !ui.showSettings
-                if (ui.showSettings) ui.mode = HomeMode.NORMAL
-            },
+            showPattern = settings.layoutMode == "freescreen",
+            patternMode = ui.patternMode,
+            selectionActive = ui.selection.isNotEmpty(),
+            onModeChange = ui::selectMode,
+            onSettingsToggle = ui::toggleSettings,
+            onPatternToggle = ui::togglePattern,
             onBlanketSet = { ui.showBlanketSet = true }
         )
     }
@@ -199,7 +208,10 @@ fun AppDrawerScreen(
                     allApps = allApps.orEmpty(),
                     mode = ui.mode,
                     guideLines = guideLines,
-                    onTap = { app -> handleAppTap(app, ui.mode, context, homeAppsStore::update) { ui.editingKey = it.key } },
+                    patternMode = ui.patternMode,
+                    selection = ui.selection,
+                    onSelectionChanged = { ui.selection = it },
+                    onTap = onTap,
                     onLongPress = onLongPress,
                     onPositionChanged = { app, newX, newY ->
                         homeAppsStore.update { stored ->
@@ -220,7 +232,7 @@ fun AppDrawerScreen(
                         allApps = allApps.orEmpty(),
                         mode = ui.mode,
                         horizontal = settings.listOrientation == "horizontal",
-                        onTap = { app -> handleAppTap(app, ui.mode, context, homeAppsStore::update) { ui.editingKey = it.key } },
+                        onTap = onTap,
                         onLongPress = onLongPress,
                         onReorder = { reordered ->
                             val orderByKey = reordered.associate { it.key to it.order }
@@ -276,11 +288,15 @@ fun AppDrawerScreen(
         }
 
         if (ui.showBlanketSet) {
+            val targets = ui.selection
             BlanketSetDialog(
                 isFreescreen = settings.layoutMode == "freescreen",
+                selectedCount = targets.size,
                 onDismiss = { ui.showBlanketSet = false },
                 onApply = { transform ->
-                    homeAppsStore.update { stored -> stored.map { it.transform() } }
+                    homeAppsStore.update { stored ->
+                        stored.map { if (targets.isEmpty() || it.key in targets) it.transform() else it }
+                    }
                     ui.showBlanketSet = false
                 }
             )
@@ -307,21 +323,6 @@ fun AppDrawerScreen(
                 }
             )
         }
-    }
-}
-
-private fun handleAppTap(
-    app: HomeScreenApp,
-    mode: HomeMode,
-    context: android.content.Context,
-    update: ((List<HomeScreenApp>) -> List<HomeScreenApp>) -> Unit,
-    openEdit: (HomeScreenApp) -> Unit
-) {
-    when (mode) {
-        HomeMode.NORMAL -> launchApp(context, app.packageName, app.userSerial)
-        HomeMode.EDITING -> openEdit(app)
-        HomeMode.DELETING -> update { stored -> stored.filter { it.key != app.key } }
-        HomeMode.ADDING -> {}
     }
 }
 

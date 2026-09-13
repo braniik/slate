@@ -42,15 +42,22 @@ private val switchColors
 @Composable
 fun BlanketSetDialog(
     isFreescreen: Boolean,
+    selectedCount: Int = 0,
     onDismiss: () -> Unit,
     onApply: (HomeScreenApp.() -> HomeScreenApp) -> Unit
 ) {
-    if (isFreescreen) FreescreenBlanket(onDismiss, onApply)
-    else ListBlanket(onDismiss, onApply)
+    val title = when (selectedCount) {
+        0 -> "all apps"
+        1 -> "1 app"
+        else -> "$selectedCount apps"
+    }
+    if (isFreescreen) FreescreenBlanket(title, onDismiss, onApply)
+    else ListBlanket(title, onDismiss, onApply)
 }
 
 @Composable
 private fun FreescreenBlanket(
+    title: String,
     onDismiss: () -> Unit,
     onApply: (HomeScreenApp.() -> HomeScreenApp) -> Unit
 ) {
@@ -60,7 +67,7 @@ private fun FreescreenBlanket(
     var rotation by remember { mutableFloatStateOf(0f) }
 
     EditDialogShell(
-        title = "all apps",
+        title = title,
         onDismiss = onDismiss,
         onSave = {
             onApply {
@@ -122,6 +129,7 @@ private fun FreescreenBlanket(
 
 @Composable
 private fun ListBlanket(
+    title: String,
     onDismiss: () -> Unit,
     onApply: (HomeScreenApp.() -> HomeScreenApp) -> Unit
 ) {
@@ -132,7 +140,7 @@ private fun ListBlanket(
     var rotation by remember { mutableFloatStateOf(0f) }
 
     EditDialogShell(
-        title = "all apps",
+        title = title,
         onDismiss = onDismiss,
         onSave = {
             onApply { copy(listTextSizeSp = textSize, listIconSizeDp = iconSize, showLabel = showIcon, iconShape = iconShape, rotationDeg = rotation) }
