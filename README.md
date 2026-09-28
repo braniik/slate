@@ -53,8 +53,6 @@ Freescreen mode is the centerpiece: your home screen is a blank **slate** where 
 
 ## Installation
 
-## Installation
-
 > **Xiaomi / HyperOS users:** setting any third-party launcher, including Slate, as default forces your phone back to three-button navigation. See [Device quirks](#device-quirks).
 
 ### F-Droid
