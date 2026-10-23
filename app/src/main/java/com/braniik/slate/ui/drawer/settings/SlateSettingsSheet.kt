@@ -10,12 +10,17 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -83,7 +88,14 @@ fun SlateSettingsSheet(
     var confirmSwitch by remember { mutableStateOf(false) }
     val targetMode = if (layoutMode == "freescreen") "list" else "freescreen"
 
-    Box(modifier = Modifier.fillMaxSize()) {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .windowInsetsPadding(barsBesideContent(toolbarPosition))
+            .padding(8.dp)
+            .clip(RoundedCornerShape(16.dp))
+            .background(SlateSurface)
+    ) {
         Column(modifier = Modifier.fillMaxSize()) {
             Row(
                 modifier = Modifier
@@ -424,6 +436,13 @@ private fun OrientationOption(
             Text(description, fontSize = 11.sp, color = SlateSubtle)
         }
     }
+}
+
+@Composable
+private fun barsBesideContent(toolbarPosition: String): WindowInsets = when (toolbarPosition) {
+    "top" -> WindowInsets.navigationBars
+    "bottom" -> WindowInsets.statusBars
+    else -> WindowInsets.systemBars
 }
 
 @Composable
