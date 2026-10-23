@@ -1,5 +1,6 @@
 package com.braniik.slate.ui.drawer.settings
 
+import android.content.Intent
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
@@ -165,11 +166,7 @@ fun WallpaperPicker(
             Spacer(Modifier.height(8.dp))
 
             SectionLabel("mode")
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                ModeChip("solid", mode == "solid") { mode = "solid" }
-                ModeChip("gradient", mode == "gradient") { mode = "gradient" }
-                ModeChip("image", mode == "image") { mode = "image" }
-            }
+            ModeGrid(mode) { mode = it }
 
             if (mode == "gradient") {
                 Spacer(Modifier.height(8.dp))
@@ -190,26 +187,31 @@ fun WallpaperPicker(
 
             if (mode == "image") {
                 Spacer(Modifier.height(8.dp))
-
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clip(RoundedCornerShape(8.dp))
-                        .background(SlateSubtle.copy(alpha = 0.3f))
-                        .clickable { imagePicker.launch("image/*") }
-                        .padding(vertical = 14.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        if (imagePath.isBlank()) "pick image" else "change image",
-                        fontSize = 13.sp,
-                        color = SlateOnBackground,
-                        letterSpacing = 1.sp
-                    )
+                PickerButton(if (imagePath.isBlank()) "pick image" else "change image") {
+                    imagePicker.launch("image/*")
                 }
             }
 
-            if (mode != "image") {
+            if (mode == "system") {
+                Spacer(Modifier.height(8.dp))
+                Text(
+                    "slate shows the wallpaper android already has and never writes over it. " +
+                            "change it from the system picker or any wallpaper app.",
+                    fontSize = 11.sp,
+                    color = SlateSubtle,
+                    lineHeight = 16.sp
+                )
+                Spacer(Modifier.height(4.dp))
+                PickerButton("open system picker") {
+                    runCatching {
+                        context.startActivity(
+                            Intent.createChooser(Intent(Intent.ACTION_SET_WALLPAPER), "wallpaper")
+                        )
+                    }
+                }
+            }
+
+            if (mode == "solid" || mode == "gradient") {
                 Spacer(Modifier.height(8.dp))
 
                 SectionLabel("hex")
@@ -270,19 +272,8 @@ private fun WallpaperPreview(
                     .clip(RoundedCornerShape(8.dp))
             )
         }
-        mode == "image" -> {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(64.dp)
-                    .clip(RoundedCornerShape(8.dp))
-                    .background(SlateBackground)
-                    .border(1.dp, SlateSubtle, RoundedCornerShape(8.dp)),
-                contentAlignment = Alignment.Center
-            ) {
-                Text("no image selected", fontSize = 11.sp, color = SlateSubtle)
-            }
-        }
+        mode == "image" -> PlaceholderPreview("no image selected")
+        mode == "system" -> PlaceholderPreview("your system wallpaper")
         else -> {
             val brush = when (mode) {
                 "gradient" -> when (gradientDirection) {
@@ -312,18 +303,67 @@ private fun WallpaperPreview(
 }
 
 @Composable
-private fun ModeChip(label: String, selected: Boolean, onClick: () -> Unit) {
+private fun PlaceholderPreview(text: String) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(64.dp)
+            .clip(RoundedCornerShape(8.dp))
+            .background(SlateBackground)
+            .border(1.dp, SlateSubtle, RoundedCornerShape(8.dp)),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(text, fontSize = 11.sp, color = SlateSubtle)
+    }
+}
+
+@Composable
+private fun PickerButton(label: String, onClick: () -> Unit) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(8.dp))
+            .background(SlateSubtle.copy(alpha = 0.3f))
+            .clickable { onClick() }
+            .padding(vertical = 14.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(label, fontSize = 13.sp, color = SlateOnBackground, letterSpacing = 1.sp)
+    }
+}
+
+private val wallpaperModes = listOf("solid", "gradient", "image", "system")
+
+@Composable
+private fun ModeGrid(current: String, onSelect: (String) -> Unit) {
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        wallpaperModes.chunked(2).forEach { pair ->
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                pair.forEach { mode ->
+                    ModeChip(mode, current == mode, Modifier.weight(1f)) { onSelect(mode) }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun ModeChip(label: String, selected: Boolean, modifier: Modifier = Modifier, onClick: () -> Unit) {
     val bg = if (selected) SlateOnBackground else Color.Transparent
     val fg = if (selected) SlateBackground else SlateSubtle
     val border = if (selected) SlateOnBackground else SlateSubtle
 
     Box(
-        modifier = Modifier
+        modifier = modifier
             .clip(RoundedCornerShape(6.dp))
             .border(1.dp, border, RoundedCornerShape(6.dp))
             .background(bg)
             .clickable { onClick() }
-            .padding(horizontal = 16.dp, vertical = 8.dp)
+            .padding(vertical = 8.dp),
+        contentAlignment = Alignment.Center
     ) {
         Text(label, fontSize = 12.sp, color = fg, letterSpacing = 1.sp)
     }

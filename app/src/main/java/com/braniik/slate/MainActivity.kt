@@ -1,5 +1,6 @@
 package com.braniik.slate
 
+import android.app.WallpaperManager
 import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -19,9 +20,10 @@ import com.braniik.slate.data.LocalWallpaperTextColor
 import com.braniik.slate.data.WallpaperConfig
 import com.braniik.slate.data.launcherSettingsFlow
 import com.braniik.slate.data.loadWallpaperBitmap
+import com.braniik.slate.data.resolveContentForeground
 import com.braniik.slate.data.resolveEdgeForeground
 import com.braniik.slate.data.saveSettings
-import com.braniik.slate.data.textColor
+import com.braniik.slate.data.systemWallpaperColorFlow
 import com.braniik.slate.data.wallpaperBackground
 import com.braniik.slate.data.wallpaperConfigFlow
 import com.braniik.slate.ui.SystemBarAppearance
@@ -29,6 +31,7 @@ import com.braniik.slate.ui.drawer.AppDrawerScreen
 import com.braniik.slate.ui.setup.SetupScreen
 import com.braniik.slate.ui.theme.SlateTheme
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -46,6 +49,13 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+    override fun onAttachedToWindow() {
+        super.onAttachedToWindow()
+        runCatching {
+            WallpaperManager.getInstance(this).setWallpaperOffsets(window.decorView.windowToken, 0.5f, 0.5f)
+        }
+    }
+
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         homeResetSignal.intValue++
@@ -58,7 +68,7 @@ fun SlateApp(homeResetSignal: Int) {
     val scope = rememberCoroutineScope()
 
     val settings by context.launcherSettingsFlow().collectAsState(initial = null)
-    val wallpaper by context.wallpaperConfigFlow().collectAsState(initial = WallpaperConfig())
+    val wallpaper by context.wallpaperConfigFlow().collectAsState(initial = WallpaperConfig(mode = "system"))
 
     var imageBitmap by remember { mutableStateOf<ImageBitmap?>(null) }
     LaunchedEffect(wallpaper.mode, wallpaper.imagePath) {
@@ -67,18 +77,22 @@ fun SlateApp(homeResetSignal: Int) {
         else null
     }
 
+    val systemColor by remember(wallpaper.mode) {
+        if (wallpaper.mode == "system") context.systemWallpaperColorFlow() else flowOf(null)
+    }.collectAsState(initial = null)
+
     val toolbarPos = settings?.toolbarPosition ?: "top"
     var screenSize by remember { mutableStateOf(IntSize.Zero) }
 
-    val toolbarTextColor = remember(wallpaper, imageBitmap, toolbarPos, screenSize) {
-        resolveEdgeForeground(wallpaper, imageBitmap, screenSize.width, screenSize.height, toolbarPos)
+    val toolbarTextColor = remember(wallpaper, imageBitmap, systemColor, toolbarPos, screenSize) {
+        resolveEdgeForeground(wallpaper, imageBitmap, systemColor, screenSize.width, screenSize.height, toolbarPos)
     }
 
-    val statusBarForeground = remember(wallpaper, imageBitmap, screenSize) {
-        resolveEdgeForeground(wallpaper, imageBitmap, screenSize.width, screenSize.height, "top")
+    val statusBarForeground = remember(wallpaper, imageBitmap, systemColor, screenSize) {
+        resolveEdgeForeground(wallpaper, imageBitmap, systemColor, screenSize.width, screenSize.height, "top")
     }
-    val navBarForeground = remember(wallpaper, imageBitmap, screenSize) {
-        resolveEdgeForeground(wallpaper, imageBitmap, screenSize.width, screenSize.height, "bottom")
+    val navBarForeground = remember(wallpaper, imageBitmap, systemColor, screenSize) {
+        resolveEdgeForeground(wallpaper, imageBitmap, systemColor, screenSize.width, screenSize.height, "bottom")
     }
 
     SystemBarAppearance(statusBarForeground, navBarForeground)
@@ -90,7 +104,7 @@ fun SlateApp(homeResetSignal: Int) {
             .wallpaperBackground(wallpaper, imageBitmap)
     ) {
         CompositionLocalProvider(
-            LocalWallpaperTextColor provides wallpaper.textColor(),
+            LocalWallpaperTextColor provides resolveContentForeground(wallpaper, systemColor),
             LocalToolbarTextColor provides toolbarTextColor,
             LocalWallpaperImage provides imageBitmap
         ) {

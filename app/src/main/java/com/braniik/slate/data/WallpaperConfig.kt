@@ -74,13 +74,14 @@ fun Modifier.wallpaperBackground(
                     srcSize = IntSize(srcW, srcH),
                     dstSize = IntSize(size.width.toInt(), size.height.toInt())
                 )
-            } ?: drawRect(color = Color(config.solidColor))
+            }
         }
         "gradient" -> {
             val colors = listOf(Color(config.gradientStart), Color(config.gradientEnd))
             val (start, end) = directionOffsets(config.gradientDirection, size)
             drawRect(brush = Brush.linearGradient(colors, start, end))
         }
+        "system" -> Unit
         else -> drawRect(color = Color(config.solidColor))
     }
 }

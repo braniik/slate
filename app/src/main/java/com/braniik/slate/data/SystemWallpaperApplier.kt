@@ -15,6 +15,7 @@ import java.io.File
 
 suspend fun applySystemWallpaper(context: Context, config: WallpaperConfig) =
     withContext(Dispatchers.IO) {
+        if (config.mode == "system") return@withContext
         val metrics = context.resources.displayMetrics
         val width = metrics.widthPixels
         val height = metrics.heightPixels

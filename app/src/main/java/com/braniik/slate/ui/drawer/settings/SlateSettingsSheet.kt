@@ -428,6 +428,20 @@ private fun OrientationOption(
 
 @Composable
 private fun WallpaperPreviewRow(config: WallpaperConfig) {
+    if (config.mode == "system") {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(48.dp)
+                .clip(RoundedCornerShape(8.dp))
+                .border(1.dp, SlateSubtle, RoundedCornerShape(8.dp)),
+            contentAlignment = Alignment.Center
+        ) {
+            Text("system wallpaper", fontSize = 11.sp, color = SlateSubtle)
+        }
+        return
+    }
+
     if (config.mode == "image" && config.imagePath.isNotBlank()) {
         val bitmap = LocalWallpaperImage.current
         if (bitmap != null) {
