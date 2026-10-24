@@ -9,7 +9,10 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.IntSize
 import com.braniik.slate.data.GuideLine
 import com.braniik.slate.data.key
@@ -28,11 +31,13 @@ fun HomeFreescreen(
     onSelectionChanged: (Set<String>) -> Unit = {},
     onTap: (HomeScreenApp) -> Unit,
     onLongPress: (HomeScreenApp) -> Unit = {},
-    onPositionChanged: (HomeScreenApp, Float, Float) -> Unit,
+    onPositionsChanged: (Map<String, Offset>) -> Unit,
     onGuidesChanged: (List<GuideLine>) -> Unit
 ) {
+    val density = LocalDensity.current
     var containerSize by remember { mutableStateOf(IntSize.Zero) }
     val marquee = rememberMarqueeState()
+    val group = remember { GroupDrag() }
 
     val editing = mode == HomeMode.EDITING
     val iconMode = if (patternMode) HomeMode.NORMAL else mode
@@ -66,9 +71,20 @@ fun HomeFreescreen(
                     mode = iconMode,
                     guideLines = guideLines,
                     selected = homeApp.key in selection,
+                    groupPosition = { group.positionOf(homeApp) },
+                    onMeasured = { group.measured(homeApp.key, it) },
+                    onDragStart = {
+                        val container = with(density) {
+                            Size(containerSize.width.toDp().value, containerSize.height.toDp().value)
+                        }
+                        group.begin(homeApp, selection, homeApps, container)
+                    },
+                    onDragDelta = group::follow,
                     onTap = { onTap(homeApp) },
                     onLongPress = { onLongPress(homeApp) },
-                    onPositionChanged = { x, y -> onPositionChanged(homeApp, x, y) }
+                    onPositionChanged = { x, y ->
+                        onPositionsChanged(group.targets() ?: mapOf(homeApp.key to Offset(x, y)))
+                    }
                 )
             }
         }

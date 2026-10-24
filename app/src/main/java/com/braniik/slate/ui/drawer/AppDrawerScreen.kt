@@ -213,10 +213,10 @@ fun AppDrawerScreen(
                     onSelectionChanged = { ui.selection = it },
                     onTap = onTap,
                     onLongPress = onLongPress,
-                    onPositionChanged = { app, newX, newY ->
+                    onPositionsChanged = { targets ->
                         homeAppsStore.update { stored ->
-                            stored.map {
-                                if (it.key == app.key) it.copy(xPos = newX, yPos = newY) else it
+                            stored.map { app ->
+                                targets[app.key]?.let { app.copy(xPos = it.x, yPos = it.y) } ?: app
                             }
                         }
                     },

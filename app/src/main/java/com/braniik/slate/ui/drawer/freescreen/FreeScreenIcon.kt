@@ -22,6 +22,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
@@ -52,6 +55,10 @@ internal fun FreescreenIcon(
     mode: HomeMode,
     guideLines: List<GuideLine> = emptyList(),
     selected: Boolean = false,
+    groupPosition: () -> Offset? = { null },
+    onMeasured: (Size) -> Unit = {},
+    onDragStart: () -> Rect? = { null },
+    onDragDelta: (Offset) -> Unit = {},
     onTap: () -> Unit,
     onLongPress: () -> Unit = {},
     onPositionChanged: (Float, Float) -> Unit
@@ -69,6 +76,8 @@ internal fun FreescreenIcon(
     val currentContainer by rememberUpdatedState(containerSize)
     val currentIconSizeDp by rememberUpdatedState(homeApp.iconSizeDp)
     val currentOnPositionChanged by rememberUpdatedState(onPositionChanged)
+    val currentOnDragStart by rememberUpdatedState(onDragStart)
+    val currentOnDragDelta by rememberUpdatedState(onDragDelta)
 
     val iconFootprintDp = homeApp.iconSizeDp + 2 * ICON_PADDING_DP
     var measuredWidthDp by remember { mutableFloatStateOf(iconFootprintDp) }
@@ -83,8 +92,12 @@ internal fun FreescreenIcon(
             .onSizeChanged {
                 measuredWidthDp = with(density) { it.width.toDp().value }
                 measuredHeightDp = with(density) { it.height.toDp().value }
+                onMeasured(Size(measuredWidthDp, measuredHeightDp))
             }
-            .offset { IntOffset(localX.dp.roundToPx(), localY.dp.roundToPx()) }
+            .offset {
+                val at = groupPosition() ?: Offset(localX, localY)
+                IntOffset(at.x.dp.roundToPx(), at.y.dp.roundToPx())
+            }
             .then(
                 when {
                     mode == HomeMode.DELETING -> Modifier
@@ -111,37 +124,52 @@ internal fun FreescreenIcon(
                         val snapY = AxisSnap()
                         var dragStartX = 0f
                         var dragStartY = 0f
+                        var groupArea: Rect? = null
+                        val finish: () -> Unit = {
+                            if (abs(localX - dragStartX) > 0.5f || abs(localY - dragStartY) > 0.5f) {
+                                currentOnPositionChanged(localX, localY)
+                            } else {
+                                localX = dragStartX
+                                localY = dragStartY
+                                currentOnDragDelta(Offset.Zero)
+                            }
+                        }
                         detectDragGestures(
                             onDragStart = {
                                 snapX.reset()
                                 snapY.reset()
                                 dragStartX = localX
                                 dragStartY = localY
+                                groupArea = currentOnDragStart()
                             },
-                            onDragEnd = {
-                                if (abs(localX - dragStartX) > 0.5f || abs(localY - dragStartY) > 0.5f) {
-                                    currentOnPositionChanged(localX, localY)
-                                }
-                            },
+                            onDragEnd = finish,
+                            onDragCancel = finish,
                             onDrag = { change, dragAmount ->
                                 change.consume()
                                 val dxDp = with(density) { dragAmount.x.toDp().value }
                                 val dyDp = with(density) { dragAmount.y.toDp().value }
                                 val containerWidthDp = with(density) { currentContainer.width.toDp().value }
                                 val containerHeightDp = with(density) { currentContainer.height.toDp().value }
-                                val maxX = (containerWidthDp - measuredWidthDp).coerceAtLeast(0f)
-                                val maxY = (containerHeightDp - measuredHeightDp).coerceAtLeast(0f)
+                                val area = groupArea ?: Rect(
+                                    0f,
+                                    0f,
+                                    (containerWidthDp - measuredWidthDp).coerceAtLeast(0f),
+                                    (containerHeightDp - measuredHeightDp).coerceAtLeast(0f)
+                                )
                                 val centerOffsetXDp = measuredWidthDp / 2f
                                 val centerOffsetYDp = ICON_PADDING_DP + currentIconSizeDp / 2f
 
                                 localX = snapX.move(
                                     raw = localX + dxDp, delta = dxDp, centerOffset = centerOffsetXDp,
-                                    max = maxX, guides = currentGuides, orientation = GuideOrientation.VERTICAL
+                                    range = area.left..area.right, guides = currentGuides,
+                                    orientation = GuideOrientation.VERTICAL
                                 )
                                 localY = snapY.move(
                                     raw = localY + dyDp, delta = dyDp, centerOffset = centerOffsetYDp,
-                                    max = maxY, guides = currentGuides, orientation = GuideOrientation.HORIZONTAL
+                                    range = area.top..area.bottom, guides = currentGuides,
+                                    orientation = GuideOrientation.HORIZONTAL
                                 )
+                                currentOnDragDelta(Offset(localX - dragStartX, localY - dragStartY))
                             }
                         )
                     }
@@ -185,7 +213,7 @@ private class AxisSnap {
         raw: Float,
         delta: Float,
         centerOffset: Float,
-        max: Float,
+        range: ClosedFloatingPointRange<Float>,
         guides: List<GuideLine>,
         orientation: GuideOrientation
     ): Float {
@@ -193,14 +221,14 @@ private class AxisSnap {
         if (stuck != null) {
             perpAccum += delta
             if (abs(perpAccum) > BREAK_THRESHOLD_DP) {
-                val released = (stuck.positionDp - centerOffset + perpAccum).coerceIn(0f, max)
+                val released = (stuck.positionDp - centerOffset + perpAccum).coerceIn(range)
                 reset()
                 return released
             }
-            return (stuck.positionDp - centerOffset).coerceIn(0f, max)
+            return (stuck.positionDp - centerOffset).coerceIn(range)
         }
 
-        val pos = raw.coerceIn(0f, max)
+        val pos = raw.coerceIn(range)
         val center = pos + centerOffset
         val near = guides
             .filter { it.orientation == orientation }
@@ -208,7 +236,7 @@ private class AxisSnap {
         if (near != null && abs(center - near.positionDp) < SNAP_THRESHOLD_DP) {
             snapped = near
             perpAccum = 0f
-            return (near.positionDp - centerOffset).coerceIn(0f, max)
+            return (near.positionDp - centerOffset).coerceIn(range)
         }
         return pos
     }
