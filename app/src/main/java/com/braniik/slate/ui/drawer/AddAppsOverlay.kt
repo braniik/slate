@@ -1,7 +1,5 @@
 package com.braniik.slate.ui.drawer
 
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -13,8 +11,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.Icon
@@ -27,15 +23,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.braniik.slate.data.LocalWallpaperTextColor
+import com.braniik.slate.ui.drawer.common.AppRow
 import com.braniik.slate.ui.drawer.common.SearchField
 import com.braniik.slate.ui.theme.SlateSubtle
-
-private const val PICKER_ICON_DP = 32
 
 @Composable
 internal fun AddAppsOverlay(
@@ -85,30 +77,7 @@ internal fun AddAppsOverlay(
                 modifier = Modifier.fillMaxSize()
             ) {
                 items(visible, key = { it.key }) { app ->
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(16.dp),
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clip(RoundedCornerShape(8.dp))
-                            .clickable { onAdd(app) }
-                            .padding(vertical = 10.dp, horizontal = 4.dp)
-                    ) {
-                        Image(
-                            bitmap = rememberAppIcon(app, PICKER_ICON_DP),
-                            contentDescription = app.label,
-                            modifier = Modifier
-                                .size(PICKER_ICON_DP.dp)
-                                .clip(CircleShape)
-                        )
-                        Text(
-                            app.label,
-                            fontSize = 14.sp,
-                            color = LocalWallpaperTextColor.current,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis
-                        )
-                    }
+                    AppRow(app) { onAdd(app) }
                 }
             }
         }

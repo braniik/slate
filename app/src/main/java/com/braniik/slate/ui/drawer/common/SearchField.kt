@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
@@ -16,10 +17,15 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
@@ -31,9 +37,20 @@ fun SearchField(
     value: String,
     onValueChange: (String) -> Unit,
     modifier: Modifier = Modifier,
-    placeholder: String = "search"
+    placeholder: String = "search",
+    autoFocus: Boolean = false,
+    onSearch: (() -> Unit)? = null
 ) {
     val foreground = LocalWallpaperTextColor.current
+    val focus = remember { FocusRequester() }
+    val keyboard = LocalSoftwareKeyboardController.current
+
+    if (autoFocus) {
+        LaunchedEffect(Unit) {
+            focus.requestFocus()
+            keyboard?.show()
+        }
+    }
 
     Row(
         verticalAlignment = Alignment.CenterVertically,
@@ -55,9 +72,11 @@ fun SearchField(
             singleLine = true,
             textStyle = TextStyle(color = foreground, fontSize = 14.sp),
             cursorBrush = SolidColor(foreground),
-            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
+            keyboardOptions = KeyboardOptions(autoCorrectEnabled = false, imeAction = ImeAction.Search),
+            keyboardActions = KeyboardActions(onSearch = { onSearch?.invoke() }),
             modifier = Modifier
                 .weight(1f)
+                .focusRequester(focus)
                 .padding(horizontal = 10.dp, vertical = 14.dp),
             decorationBox = { inner ->
                 Box {

@@ -1,6 +1,7 @@
 package com.braniik.slate
 
 import com.braniik.slate.ui.drawer.matchRank
+import com.braniik.slate.ui.drawer.soleMatch
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
@@ -37,5 +38,38 @@ class AppSearchTest {
     @Test
     fun noMatchIsNull() {
         assertNull(matchRank("Signal", "org.thoughtcrime.securesms", "firefox"))
+    }
+
+    @Test
+    fun lettersInOrderMatchFuzzily() {
+        assertEquals(3, matchRank("Syncthing", "x", "sth"))
+        assertEquals(3, matchRank("F-Droid", "x", "fdroid"))
+        assertEquals(3, matchRank("Google Maps", "x", "g m"))
+    }
+
+    @Test
+    fun lettersOutOfOrderDoNotMatch() {
+        assertNull(matchRank("Syncthing", "x", "hts"))
+    }
+
+    @Test
+    fun fuzzyRanksBelowSubstringAndAbovePackage() {
+        val substring = matchRank("Insignal", "a", "sig")!!
+        val fuzzy = matchRank("Syncthing", "b", "sth")!!
+        val byPackage = matchRank("Messages", "org.thoughtcrime.securesms", "thoughtcrime")!!
+        assertTrue(substring < fuzzy)
+        assertTrue(fuzzy < byPackage)
+    }
+
+    @Test
+    fun onlyASingleMatchIsSole() {
+        assertEquals("signal", soleMatch("sig", listOf("signal")))
+        assertNull(soleMatch("s", listOf("signal", "syncthing")))
+        assertNull(soleMatch("zzz", emptyList<String>()))
+    }
+
+    @Test
+    fun aBlankQueryNeverLaunches() {
+        assertNull(soleMatch(" ", listOf("signal")))
     }
 }

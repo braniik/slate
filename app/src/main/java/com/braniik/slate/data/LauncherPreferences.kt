@@ -24,6 +24,7 @@ object PreferenceKeys {
     val WALLPAPER = stringPreferencesKey("wallpaper_config")
     val GUIDE_LINES = stringPreferencesKey("guide_lines")
     val ICON_PACK = stringPreferencesKey("icon_pack")
+    val SWIPE_SEARCH = booleanPreferencesKey("swipe_search")
 }
 
 data class LauncherSettings(
@@ -31,7 +32,8 @@ data class LauncherSettings(
     val layoutMode: String = "",
     val listOrientation: String = "vertical",
     val toolbarPosition: String = "top",
-    val toolbarTitle: String = "slate"
+    val toolbarTitle: String = "slate",
+    val swipeSearch: Boolean = false
 )
 
 data class HomeScreenApp(
@@ -103,7 +105,8 @@ fun Context.launcherSettingsFlow(): Flow<LauncherSettings> =
             layoutMode = mode,
             listOrientation = prefs[PreferenceKeys.LIST_ORIENTATION] ?: "vertical",
             toolbarPosition = prefs[PreferenceKeys.TOOLBAR_POSITION] ?: "top",
-            toolbarTitle = prefs[PreferenceKeys.TOOLBAR_TITLE] ?: "slate"
+            toolbarTitle = prefs[PreferenceKeys.TOOLBAR_TITLE] ?: "slate",
+            swipeSearch = prefs[PreferenceKeys.SWIPE_SEARCH] ?: false
         )
     }
 
@@ -147,6 +150,12 @@ suspend fun Context.saveToolbarPosition(position: String) {
 suspend fun Context.saveToolbarTitle(title: String) {
     dataStore.edit { prefs ->
         prefs[PreferenceKeys.TOOLBAR_TITLE] = title
+    }
+}
+
+suspend fun Context.saveSwipeSearch(enabled: Boolean) {
+    dataStore.edit { prefs ->
+        prefs[PreferenceKeys.SWIPE_SEARCH] = enabled
     }
 }
 

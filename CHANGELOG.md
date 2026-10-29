@@ -1,5 +1,15 @@
 # Slate Changelog
 
+## 1.1 → 1.2
+ 
+**1.2** brings four changes:
+ 
+- **Swipe up to search:** Opt-in, under **swipe up** in settings. Swipe up on the home screen, type part of an app's name, and it opens as soon as only one app matches. Matching is fuzzy.
+- **System wallpaper:** A new `system` mode in the wallpaper picker. Slate shows the wallpaper Android already has and never writes over it.
+- **Group drag:** In freescreen edit mode, drag any icon in a multi-selection and the whole selection moves with it, keeping its arrangement. The group stops as one when its outermost icon reaches a screen edge, and the icon under your finger still snaps to guide lines.
+- **Settings are opaque now:** The settings sheet is an opaque rounded card instead of drawing straight over the wallpaper.
+
+
 ## 1.0.1 → 1.1
  
 **1.1** is a quality-of-life bundle. Four features, two of were feature requests from people actually using Slate:

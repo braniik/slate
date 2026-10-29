@@ -19,6 +19,7 @@ import com.braniik.slate.data.key
 import com.braniik.slate.data.HomeScreenApp
 import com.braniik.slate.ui.drawer.AppInfo
 import com.braniik.slate.ui.drawer.HomeMode
+import com.braniik.slate.ui.drawer.common.swipeUp
 
 @Composable
 fun HomeFreescreen(
@@ -31,6 +32,7 @@ fun HomeFreescreen(
     onSelectionChanged: (Set<String>) -> Unit = {},
     onTap: (HomeScreenApp) -> Unit,
     onLongPress: (HomeScreenApp) -> Unit = {},
+    onSwipeUp: (() -> Unit)? = null,
     onPositionsChanged: (Map<String, Offset>) -> Unit,
     onGuidesChanged: (List<GuideLine>) -> Unit
 ) {
@@ -46,6 +48,7 @@ fun HomeFreescreen(
         modifier = Modifier
             .fillMaxSize()
             .onSizeChanged { containerSize = it }
+            .swipeUp(enabled = onSwipeUp != null) { onSwipeUp?.invoke() }
             .marqueeSelection(
                 state = marquee,
                 apps = homeApps,

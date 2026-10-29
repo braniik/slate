@@ -24,7 +24,7 @@ Freescreen mode is the centerpiece: your home screen is a blank **slate** where 
 - **Freescreen mode:** In edit mode, drag icons to any position on screen.
 - **List mode:** Vertical or horizontal scrolling list. Drag-to-reorder in edit mode.
 - **Guide lines:** In edit mode, swipe from screen edges to create guide lines. Icons snap to guides and slide along them.
-- **Wallpapers:** Solid color, gradient (8 directions), or image. Auto-contrast text adapts to whatever you set.
+- **Wallpapers:** Solid color, gradient (8 directions), image, or the system wallpaper you already have.
 - **System bar contrast:** Status bar and navigation bar icons auto-adapt to the light/dark wallpapers, it is the same logic as toolbar.
 - **Toolbar position:** Snap the toolbar to any screen edge.
 - **Custom title:** Set your own toolbar title or leave it blank to hide it.
@@ -34,9 +34,10 @@ Freescreen mode is the centerpiece: your home screen is a blank **slate** where 
 - **Icon packs:** Supports all major pack formats (ADW, Nova, Apex, GO, Tesla)
 - **Work profiles:** Apps from managed profiles (Shelter, Island) appear alongside personal apps, badged with the system work indicator, and launch into the right profile.
 - **Blanket-set:** Apply icon size, shape, rotation, or label settings to every app at once.
-- **Multi-select:** In freescreen edit mode, drag a box across empty canvas to select several icons, then set their properties in one go. Tap icons to add or drop them from the selection.
+- **Multi-select:** In freescreen edit mode, drag a box across empty canvas to select several icons, then set their properties in one go. Tap icons to add or drop them from the selection. Drag any selected icon and the whole group moves with it.
 - **Guide patterns:** In freescreen edit mode, tap a region and halve it. Symmetry without measuring by eye.
 - **Search when adding:** Filter the app picker.
+- **Swipe up to search (opt-in):** Turn it on under **swipe up** in settings. Swipe up on home, type part of a name, and the app opens as soon as only one matches.
 - **Home app switching:** Jump straight to the system screen that picks your home app.
 - **You choose what shows up.** Tap + to add apps, tap the trash to remove. Nothing appears unless you put it there.
 
@@ -48,7 +49,7 @@ Freescreen mode is the centerpiece: your home screen is a blank **slate** where 
 | Pen | Editing | Tap an app to customize it, drag to reposition (freescreen) or reorder (list). Create and manage guide lines in freescreen. Drag across empty canvas to multi-select |
 | Border | Guide patterns | Appears in freescreen edit mode. Tap a region to halve it vertically or horizontally |
 | Bin | Deleting | Tap an app to remove it from the home screen |
-| Cog | Settings | Switch layout mode, change list orientation, set toolbar position, customize wallpaper, select icon pack |
+| Cog | Settings | Switch layout mode, change list orientation, set toolbar position, set the swipe up action, customize wallpaper, select icon pack |
 | Tune | Blanket-set | Appears in edit mode. Set icon size/shape/rotation/labels for every app at once, or for just the current multiselection |
 
 ## Installation
@@ -95,30 +96,35 @@ git clone https://github.com/braniik/slate.git
 │   ├── LauncherPreferences.kt     — DataStore keys, HomeScreenApp model (package + profile identity), settings flows
 │   ├── LauncherRole.kt            — the HOME role: who holds it, requesting it, and the system screen that reassigns it
 │   ├── PackageChanges.kt          — flow of app/profile changes via LauncherApps.Callback
-│   ├── SystemWallpaperApplier.kt  — renders wallpaper config to the system wallpaper
-│   ├── WallpaperConfig.kt         — wallpaper mode/colors/gradient, per-edge text color for solid/gradient
+│   ├── SystemWallpaperApplier.kt  — renders wallpaper config to the system wallpaper (skipped in system mode)
+│   ├── SystemWallpaperColor.kt    — flow of the system wallpaper's primary color, for contrast in system mode
+│   ├── WallpaperConfig.kt         — wallpaper mode (solid/gradient/image/system), colors, gradient, per-edge text color
 │   ├── WallpaperImageStore.kt     — image save (unique file per pick)/load/compress/prune, palette extraction
-│   └── WallpaperSampler.kt        — image wallpaper edge-strip sampling behind the toolbar and system bars
+│   └── WallpaperSampler.kt        — foreground per edge and for content: image edge-strip sampling, system wallpaper colors
 └── ui/
     ├── SystemBars.kt               — status/navigation bar icon appearance (light vs dark)
     ├── drawer/
     │   ├── AddAppsOverlay.kt       — searchable picker for adding apps to home
     │   ├── AppActions.kt           — acting on apps: launch, open the system App Info sheet
-    │   ├── AppSearch.kt            — match ranking for the picker's search bar
+    │   ├── AppSearch.kt            — match ranking (prefix, word, substring, fuzzy, package) shared by picker and search
     │   ├── AppIcon.kt              — rememberAppIcon: an app's icon rasterized once per size, reused across recompositions
     │   ├── AppDrawerScreen.kt      — wires modes, dialogs, back handling, home reset, every home list edit goes through HomeAppsStore
     │   ├── AppLoader.kt            — LauncherApps query across profiles; AppInfo holds the Drawable and renders badged, unmasked bitmaps on demand
-    │   ├── HomeMode.kt             — NORMAL, ADDING, EDITING, DELETING enum
+    │   ├── HomeMode.kt             — NORMAL, ADDING, EDITING, DELETING, SEARCHING enum
     │   ├── HomeUiState.kt          — ephemeral mode/overlay/selection state, its two transitions: back (peel topmost) and home (reset)
+    │   ├── LaunchSearch.kt         — swipe-up search: empty until you type, launches on a sole match
     │   ├── Toolbar.kt              — position-aware toolbar
     │   ├── common/
+    │   │   ├── AppRow.kt           — one app as a tappable icon + name row, used by the picker and search
     │   │   ├── BlanketSetDialog.kt — bulk-set icon size/shape/rotation/labels for all apps
     │   │   ├── EditDialogShell.kt  — reusable dialog frame with save/close
     │   │   ├── IconShape.kt        — shape definitions and picker
-    │   │   └── SearchField.kt      — single-line input tinted by the wallpaper's own foreground
+    │   │   ├── SearchField.kt      — single-line input tinted by the wallpaper's own foreground
+    │   │   └── SwipeUp.kt          — swipe-up gesture modifier that lets taps and scrolls pass through
     │   ├── freescreen/
     │   │   ├── FreeScreenIcon.kt       — draggable icon (edit mode), AxisSnap handles guide line snapping per axis
     │   │   ├── FreescreenEditDialog.kt — per-icon size, shape, rotation, and label toggle
+    │   │   ├── GroupDrag.kt            — moves a multi-selection as one, stopping where its outermost icon meets an edge
     │   │   ├── GuideDraw.kt            — the one place guide lines get painted
     │   │   ├── GuideLineLayer.kt       — creates, drags, and deletes guide lines
     │   │   ├── GuidePatternLayer.kt    — tap a region and halve it
@@ -128,8 +134,8 @@ git clone https://github.com/braniik/slate.git
     │   │   ├── HomeList.kt         — vertical/horizontal list with drag-to-reorder
     │   │   └── ListEditDialog.kt   — per-item text size, icon size, shape, rotation, icon toggle
     │   └── settings/
-    │       ├── SlateSettingsSheet.kt — layout mode switch, list orientation, toolbar position, title, wallpaper access, icon pack selection
-    │       └── WallpaperPicker.kt    — solid/gradient/image wallpaper configuration
+    │       ├── SlateSettingsSheet.kt — layout mode switch, list orientation, toolbar position, title, swipe up, wallpaper access, icon pack selection
+    │       └── WallpaperPicker.kt    — solid/gradient/image/system wallpaper configuration
     ├── setup/
     │   └── SetupScreen.kt          — first-launch layout picker
     └── theme/
@@ -158,6 +164,7 @@ git clone https://github.com/braniik/slate.git
 - [x] 1.0 — F-Droid release (and other stores, if Android stays open)
 - [x] 1.0.1 — Bugfixes from the first weeks on F-Droid
 - [x] 1.1 — QoL bundle: picker search, guide patterns, multi-select, home app switching
+- [x] 1.2 — Swipe-up search, system wallpaper, group drag
 
 ## Contributing
 

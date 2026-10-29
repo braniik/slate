@@ -36,11 +36,13 @@ import com.braniik.slate.data.saveGuideLines
 import com.braniik.slate.data.saveIconPack
 import com.braniik.slate.data.saveLayoutMode
 import com.braniik.slate.data.saveListOrientation
+import com.braniik.slate.data.saveSwipeSearch
 import com.braniik.slate.data.saveToolbarPosition
 import com.braniik.slate.data.saveToolbarTitle
 import com.braniik.slate.data.saveWallpaperConfig
 import com.braniik.slate.data.wallpaperConfigFlow
 import com.braniik.slate.ui.drawer.common.BlanketSetDialog
+import com.braniik.slate.ui.drawer.common.swipeUp
 import com.braniik.slate.ui.drawer.freescreen.FreescreenEditDialog
 import com.braniik.slate.ui.drawer.freescreen.HomeFreescreen
 import com.braniik.slate.ui.drawer.list.HomeList
@@ -133,15 +135,20 @@ fun AppDrawerScreen(
                 if (ui.selection.isEmpty()) ui.editingKey = app.key else ui.toggleSelected(app.key)
             HomeMode.DELETING ->
                 homeAppsStore.update { stored -> stored.filter { it.key != app.key } }
-            HomeMode.ADDING -> {}
+            HomeMode.ADDING, HomeMode.SEARCHING -> {}
         }
     }
+
+    val onSwipeUp: (() -> Unit)? =
+        if (settings.swipeSearch && ui.mode == HomeMode.NORMAL) {
+            { ui.selectMode(HomeMode.SEARCHING) }
+        } else null
 
     val pos = settings.toolbarPosition
     val sideToolbar = pos == "left" || pos == "right"
 
     val toolbar: @Composable () -> Unit = {
-        Toolbar(
+        if (ui.mode != HomeMode.SEARCHING) Toolbar(
             mode = ui.mode,
             showSettings = ui.showSettings,
             position = pos,
@@ -165,19 +172,30 @@ fun AppDrawerScreen(
                         listOrientation = settings.listOrientation,
                         toolbarPosition = pos,
                         toolbarTitle = settings.toolbarTitle,
+                        swipeSearch = settings.swipeSearch,
                         wallpaperConfig = wallpaperConfig,
                         selectedIconPack = selectedIconPack,
                         onSwitchMode = ::switchMode,
                         onListOrientationChange = { scope.launch { context.saveListOrientation(it) } },
                         onToolbarPositionChange = { scope.launch { context.saveToolbarPosition(it) } },
                         onToolbarTitleChange = { scope.launch { context.saveToolbarTitle(it) } },
+                        onSwipeSearchChange = { scope.launch { context.saveSwipeSearch(it) } },
                         onIconPackChange = { scope.launch { context.saveIconPack(it) } },
                         onOpenWallpaperPicker = { ui.showWallpaperPicker = true },
                         onClose = { ui.showSettings = false }
                     )
                 }
 
-                allApps != null && homeApps.isEmpty() && ui.mode != HomeMode.ADDING -> EmptyState()
+                ui.mode == HomeMode.SEARCHING -> LaunchSearch(
+                    apps = allApps.orEmpty(),
+                    onLaunch = { info ->
+                        launchApp(context, info.packageName, info.userSerial)
+                        ui.mode = HomeMode.NORMAL
+                    },
+                    onClose = { ui.mode = HomeMode.NORMAL }
+                )
+
+                allApps != null && homeApps.isEmpty() && ui.mode != HomeMode.ADDING -> EmptyState(onSwipeUp)
 
                 ui.mode == HomeMode.ADDING -> {
                     val existing = homeApps.map { it.key }.toSet()
@@ -213,6 +231,7 @@ fun AppDrawerScreen(
                     onSelectionChanged = { ui.selection = it },
                     onTap = onTap,
                     onLongPress = onLongPress,
+                    onSwipeUp = onSwipeUp,
                     onPositionsChanged = { targets ->
                         homeAppsStore.update { stored ->
                             stored.map { app ->
@@ -234,6 +253,7 @@ fun AppDrawerScreen(
                         horizontal = settings.listOrientation == "horizontal",
                         onTap = onTap,
                         onLongPress = onLongPress,
+                        onSwipeUp = onSwipeUp,
                         onReorder = { reordered ->
                             val orderByKey = reordered.associate { it.key to it.order }
                             homeAppsStore.update { stored ->
@@ -352,8 +372,13 @@ internal fun gridFreescreenPos(
 }
 
 @Composable
-private fun EmptyState() {
-    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+private fun EmptyState(onSwipeUp: (() -> Unit)?) {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .swipeUp(enabled = onSwipeUp != null) { onSwipeUp?.invoke() },
+        contentAlignment = Alignment.Center
+    ) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(8.dp)

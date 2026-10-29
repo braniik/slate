@@ -75,12 +75,14 @@ fun SlateSettingsSheet(
     listOrientation: String,
     toolbarPosition: String,
     toolbarTitle: String,
+    swipeSearch: Boolean,
     wallpaperConfig: WallpaperConfig,
     selectedIconPack: String,
     onSwitchMode: (String) -> Unit,
     onListOrientationChange: (String) -> Unit,
     onToolbarPositionChange: (String) -> Unit,
     onToolbarTitleChange: (String) -> Unit,
+    onSwipeSearchChange: (Boolean) -> Unit,
     onIconPackChange: (String) -> Unit,
     onOpenWallpaperPicker: () -> Unit,
     onClose: () -> Unit
@@ -165,6 +167,15 @@ fun SlateSettingsSheet(
                     modifier = Modifier.padding(bottom = 8.dp, start = 4.dp)
                 )
                 TitleField(toolbarTitle, onToolbarTitleChange)
+
+                Spacer(Modifier.height(24.dp))
+                SectionLabel("swipe up")
+                OrientationOption("nothing", "home stays still", !swipeSearch) {
+                    onSwipeSearchChange(false)
+                }
+                OrientationOption("search", "type a name to launch any app", swipeSearch) {
+                    onSwipeSearchChange(true)
+                }
 
                 Spacer(Modifier.height(24.dp))
                 SectionLabel("wallpaper")

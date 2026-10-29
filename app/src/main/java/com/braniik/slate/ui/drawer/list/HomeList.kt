@@ -47,6 +47,7 @@ import com.braniik.slate.data.LocalWallpaperTextColor
 import com.braniik.slate.ui.drawer.AppInfo
 import com.braniik.slate.ui.drawer.HomeMode
 import com.braniik.slate.ui.drawer.common.iconShapeFor
+import com.braniik.slate.ui.drawer.common.swipeUp
 import com.braniik.slate.ui.drawer.rememberAppIcon
 import com.braniik.slate.ui.theme.SlateDanger
 
@@ -58,6 +59,7 @@ fun HomeList(
     horizontal: Boolean,
     onTap: (HomeScreenApp) -> Unit,
     onLongPress: (HomeScreenApp) -> Unit = {},
+    onSwipeUp: (() -> Unit)? = null,
     onReorder: (List<HomeScreenApp>) -> Unit = {}
 ) {
     val canDrag = mode == HomeMode.EDITING
@@ -112,6 +114,10 @@ fun HomeList(
         }
     }
 
+    val swipeModifier = Modifier.swipeUp(
+        enabled = onSwipeUp != null && (horizontal || !listState.canScrollForward)
+    ) { onSwipeUp?.invoke() }
+
     if (horizontal) {
         LazyRow(
             state = listState,
@@ -119,7 +125,9 @@ fun HomeList(
             contentPadding = PaddingValues(horizontal = 20.dp, vertical = 8.dp),
             horizontalArrangement = Arrangement.spacedBy(4.dp),
             verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.fillMaxSize()
+            modifier = Modifier
+                .fillMaxSize()
+                .then(swipeModifier)
         ) {
             itemsIndexed(items, key = { _, app -> app.key }) { index, homeApp ->
                 val info = allApps.find { it.key == homeApp.key }
@@ -147,7 +155,9 @@ fun HomeList(
             userScrollEnabled = !canDrag,
             contentPadding = PaddingValues(horizontal = 20.dp, vertical = 8.dp),
             verticalArrangement = Arrangement.spacedBy(2.dp),
-            modifier = Modifier.fillMaxSize()
+            modifier = Modifier
+                .fillMaxSize()
+                .then(swipeModifier)
         ) {
             itemsIndexed(items, key = { _, app -> app.key }) { index, homeApp ->
                 val info = allApps.find { it.key == homeApp.key }

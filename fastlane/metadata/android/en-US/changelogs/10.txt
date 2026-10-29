@@ -1,0 +1,7 @@
+1.2 brings swipe-up search, system wallpaper, and group drag.
+
+- Swipe up to search (turn on in settings): type part of an app's name and it opens once only one app matches.
+- System wallpaper mode: Slate shows the wallpaper Android already has.
+- Group drag: drag a multi-selection and it moves as one.
+- Settings is now an opaque card.
+- The add-apps picker matches fuzzily too.
