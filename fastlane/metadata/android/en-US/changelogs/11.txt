@@ -1,0 +1,2 @@
+1.2.1 fixes the toolbar title when the toolbar is on the left or right: it no longer widens the toolbar or runs into the status bar, and very long titles are cut off with "…".
+Thanks to mjlongfl for the report and the fix.

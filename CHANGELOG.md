@@ -1,5 +1,11 @@
 # Slate Changelog
 
+## 1.2 → 1.2.1
+
+**1.2.1** is a bugfix release, and the first with a fix from a **contributor**:
+
+- **Vertical toolbar title:** With the toolbar on the left or right, the title was only rotated when drawn, so for layout it still took up the width of horizontal text. Anything longer than a few characters made the toolbar wider and ran into the status bar. The title now takes up rotated space, so the toolbar stays slim, and very long titles are cut off with "…" instead of pushing the buttons off the toolbar. Reported and fixed by @mjlongfl (#7, #10).
+
 ## 1.1 → 1.2
  
 **1.2** brings four changes:
