@@ -3,6 +3,7 @@ package com.braniik.slate.ui.drawer
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
@@ -29,6 +30,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.layout.layout
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -119,7 +121,6 @@ private fun VerticalToolbar(
     actions: @Composable () -> Unit
 ) {
     val textColor = LocalToolbarTextColor.current
-    val rotation = if (position == "left") -90f else 90f
 
     Column(
         modifier = Modifier
@@ -130,23 +131,60 @@ private fun VerticalToolbar(
         verticalArrangement = Arrangement.SpaceBetween,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        if (title.isNotBlank()) {
-            Text(
-                title,
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Light,
-                color = textColor,
-                letterSpacing = 4.sp,
-                maxLines = 1,
-                modifier = Modifier.rotate(rotation)
-            )
-        } else {
-            Spacer(Modifier)
-        }
-
+        VerticalToolbarTitle(title, textColor, (position == "right"))
         actions()
     }
 }
+
+@Composable
+private fun ColumnScope.VerticalToolbarTitle(title: String, textColor: Color, rotateClockwise : Boolean) {
+    if (title.isBlank()) {
+        Spacer(Modifier)
+        return
+    }
+
+    Text(
+        title,
+        fontSize = 18.sp,
+        fontWeight = FontWeight.Light,
+        color = textColor,
+        letterSpacing = 4.sp,
+        maxLines = 1,
+        overflow = TextOverflow.Ellipsis,
+        modifier = Modifier.weight(1f, fill = false).rotateVertically(rotateClockwise)
+    )
+}
+
+// Influenced by https://dev.to/vladleesi/vertical-text-in-jetpack-compose-without-rotation-width-problems-4n2m
+private fun Modifier.rotateVertically(rotateClockwise: Boolean): Modifier {
+    // Swap height and width (because it is rotated 90 degrees)
+    val adjustBounds = layout { m, c ->
+        val p = m.measure(
+            // Keep within existing bounds
+            c.copy(
+                minWidth = c.minHeight,
+                maxWidth = c.maxHeight,
+                minHeight = c.minWidth,
+                maxHeight = c.maxWidth
+            )
+        )
+        // Swapped height and width (because it is rotated)
+        val h = p.width
+        val w = p.height
+        layout(w, h) {
+            // Reposition after rotation
+            p.place(
+                x = -h / 2 + w / 2,
+                y = -w / 2 + h / 2
+            )
+        }
+    }
+
+    return this
+        .then(Modifier.rotate(if (rotateClockwise) 90f else -90f))
+        .then(adjustBounds)
+}
+
 @Composable
 private fun ToolbarActions(
     vertical: Boolean,
