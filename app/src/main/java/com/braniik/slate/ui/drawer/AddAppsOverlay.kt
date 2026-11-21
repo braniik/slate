@@ -25,9 +25,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.braniik.slate.data.LocalWallpaperTextColor
 import com.braniik.slate.ui.drawer.common.AppRow
 import com.braniik.slate.ui.drawer.common.SearchField
-import com.braniik.slate.ui.theme.SlateSubtle
 
 @Composable
 internal fun AddAppsOverlay(
@@ -37,6 +37,7 @@ internal fun AddAppsOverlay(
 ) {
     var query by remember { mutableStateOf("") }
     val visible = apps.matching(query)
+    val subtle = LocalWallpaperTextColor.current.copy(alpha = 0.55f)
 
     Column(modifier = Modifier.fillMaxSize()) {
         Row(
@@ -46,9 +47,9 @@ internal fun AddAppsOverlay(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text("add apps", fontSize = 14.sp, color = SlateSubtle, letterSpacing = 2.sp)
+            Text("add apps", fontSize = 14.sp, color = subtle, letterSpacing = 2.sp)
             IconButton(onClick = onClose, modifier = Modifier.size(48.dp)) {
-                Icon(Icons.Filled.Close, "close", tint = SlateSubtle, modifier = Modifier.size(18.dp))
+                Icon(Icons.Filled.Close, "close", tint = subtle, modifier = Modifier.size(18.dp))
             }
         }
 
@@ -67,7 +68,7 @@ internal fun AddAppsOverlay(
                 Text(
                     if (apps.isEmpty()) "all apps added" else "nothing matches",
                     fontSize = 14.sp,
-                    color = SlateSubtle
+                    color = subtle
                 )
             }
         } else {

@@ -165,10 +165,13 @@ git clone https://github.com/braniik/slate.git
 - [x] 1.0.1 — Bugfixes from the first weeks on F-Droid
 - [x] 1.1 — QoL bundle: picker search, guide patterns, multi-select, home app switching
 - [x] 1.2 — Swipe-up search, system wallpaper, group drag
+- [x] 1.2.1 — Vertical toolbar title fix, the first contribution
+- [x] 1.2.2 — Higher contrast in settings and over the wallpaper
+- [ ] 1.3 — Distribute: space selected freescreen icons evenly
 
 ## Contributing
 
-Contributions are welcome, see [CONTRIBUTING.md](CONTRIBUTING.md) for scope, build instructions, and style. If you're unsure whether an idea fits, open a nissue first.
+Contributions are welcome, see [CONTRIBUTING.md](CONTRIBUTING.md) for scope, build instructions, and style. If you're unsure whether an idea fits, open an issue first.
 
 ## Device quirks
 

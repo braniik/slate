@@ -1,0 +1,2 @@
+1.2.2 makes settings readable: secondary text, borders and switches use a lighter grey that holds up at low brightness.
+The "add apps" header and empty home hint now follow the wallpaper's text color, so they stay visible on dark wallpapers.

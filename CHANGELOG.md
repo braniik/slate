@@ -1,5 +1,12 @@
 # Slate Changelog
 
+## 1.2.1 → 1.2.2
+ 
+**1.2.2** is a bugfix release for readability:
+ 
+- **Readable settings:** Section titles, descriptions, unselected options and other secondary text in settings and the edit dialogs used a grey too close to the dark background. It's lighter now, so it stays readable at low brightness. Borders, slider tracks and switches got the same lift. Reported by @reinold-p (#11).
+- **Text over the wallpaper:** The "add apps" header and the empty home screen hint used a fixed grey that disappeared on dark wallpapers. They now follow the wallpaper's text color, like the rest of the home screen.
+
 ## 1.2 → 1.2.1
 
 **1.2.1** is a bugfix release, and the first with a fix from a **contributor**:
