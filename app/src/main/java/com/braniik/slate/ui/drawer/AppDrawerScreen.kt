@@ -25,6 +25,7 @@ import androidx.compose.ui.unit.sp
 import com.braniik.slate.data.HomeScreenApp
 import com.braniik.slate.data.key
 import com.braniik.slate.data.LauncherSettings
+import com.braniik.slate.data.LocalWallpaperTextColor
 import com.braniik.slate.data.packageChangesFlow
 import com.braniik.slate.data.WallpaperConfig
 import com.braniik.slate.data.applySystemWallpaper
@@ -50,7 +51,6 @@ import com.braniik.slate.ui.drawer.list.HomeList
 import com.braniik.slate.ui.drawer.list.ListEditDialog
 import com.braniik.slate.ui.drawer.settings.SlateSettingsSheet
 import com.braniik.slate.ui.drawer.settings.WallpaperPicker
-import com.braniik.slate.ui.theme.SlateSubtle
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -431,8 +431,9 @@ private fun EmptyState(onSwipeUp: (() -> Unit)?) {
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            Text("nothing here yet", fontSize = 16.sp, color = SlateSubtle)
-            Text("tap + to add your apps", fontSize = 12.sp, color = SlateSubtle)
+            val subtle = LocalWallpaperTextColor.current.copy(alpha = 0.55f)
+            Text("nothing here yet", fontSize = 16.sp, color = subtle)
+            Text("tap + to add your apps", fontSize = 12.sp, color = subtle)
         }
     }
 }
