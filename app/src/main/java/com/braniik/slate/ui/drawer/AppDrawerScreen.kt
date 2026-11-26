@@ -47,6 +47,7 @@ import com.braniik.slate.ui.drawer.common.ListBlanketSetDialog
 import com.braniik.slate.ui.drawer.common.swipeUp
 import com.braniik.slate.ui.drawer.freescreen.FreescreenEditDialog
 import com.braniik.slate.ui.drawer.freescreen.HomeFreescreen
+import com.braniik.slate.ui.drawer.freescreen.ICON_PADDING_DP
 import com.braniik.slate.ui.drawer.list.HomeList
 import com.braniik.slate.ui.drawer.list.ListEditDialog
 import com.braniik.slate.ui.drawer.settings.SlateSettingsSheet
@@ -324,6 +325,14 @@ fun AppDrawerScreen(
                 }
             }
 
+            fun fromCenter(center: Float, app: HomeScreenApp): Float {
+                return center - ICON_PADDING_DP - app.iconSizeDp / 2f
+            }
+
+            fun toCenter(start: Float, app: HomeScreenApp): Float {
+                return start + ICON_PADDING_DP + app.iconSizeDp / 2f
+            }
+
             if (settings.layoutMode == "freescreen") {
                 FreescreenBlanketSetDialog(title, selectedCount, onDismiss, { distributionAxis, transform ->
                     applyToSelected(transform)
@@ -332,12 +341,12 @@ fun AppDrawerScreen(
                         // dynamic getter/"setter", based on axis
                         val (getPos, withPos) = when (distributionAxis) {
                             "horizontally" -> Pair(
-                                { app: HomeScreenApp -> app.xPos },
-                                { app: HomeScreenApp, newX: Float -> app.copy(xPos = newX) }
+                                { app: HomeScreenApp -> toCenter(app.xPos, app) },
+                                { app: HomeScreenApp, newX: Float -> app.copy(xPos = fromCenter(newX, app)) }
                             )
                             "vertically" -> Pair(
-                                { app: HomeScreenApp -> app.yPos },
-                                { app: HomeScreenApp, newY: Float -> app.copy(yPos = newY) }
+                                { app: HomeScreenApp -> toCenter(app.yPos, app) },
+                                { app: HomeScreenApp, newY: Float -> app.copy(yPos = fromCenter(newY, app)) }
                             )
                             else -> throw IllegalArgumentException("Unknown axis: $distributionAxis")
                         }
