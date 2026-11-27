@@ -3,27 +3,25 @@ package com.braniik.slate.data
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
 
-private const val UNKNOWN_SYSTEM_COLOR = 0xFF333333.toInt()
-
 fun resolveEdgeForeground(
     wallpaper: WallpaperConfig,
     imageBitmap: ImageBitmap?,
-    systemColor: Int?,
+    systemDarkText: Boolean?,
     screenWidthPx: Int,
     screenHeightPx: Int,
     edge: String
 ): Color = when {
-    wallpaper.mode == "system" -> systemForeground(systemColor)
+    wallpaper.mode == "system" -> systemForeground(systemDarkText)
     wallpaper.mode == "image" && imageBitmap != null && screenWidthPx > 0 && screenHeightPx > 0 ->
         sampleToolbarEdgeColor(imageBitmap, screenWidthPx, screenHeightPx, edge)
     else -> wallpaper.textColorAt(edge)
 }
 
-fun resolveContentForeground(wallpaper: WallpaperConfig, systemColor: Int?): Color =
-    if (wallpaper.mode == "system") systemForeground(systemColor) else wallpaper.textColor()
+fun resolveContentForeground(wallpaper: WallpaperConfig, systemDarkText: Boolean?): Color =
+    if (wallpaper.mode == "system") systemForeground(systemDarkText) else wallpaper.textColor()
 
-private fun systemForeground(systemColor: Int?): Color =
-    foregroundFor(Color(systemColor ?: UNKNOWN_SYSTEM_COLOR))
+private fun systemForeground(darkText: Boolean?): Color =
+    if (darkText == true) DarkText else LightText
 
 fun sampleToolbarEdgeColor(
     bitmap: ImageBitmap,

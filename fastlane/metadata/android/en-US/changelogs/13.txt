@@ -1,0 +1,2 @@
+1.2.3 fixes dark toolbar icons on dark system wallpapers with bright accents.
+On Android 12 and newer, Slate now asks Android whether dark text suits the wallpaper, like other launchers do, instead of guessing from its most eye-catching color.

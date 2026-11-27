@@ -23,7 +23,7 @@ import com.braniik.slate.data.loadWallpaperBitmap
 import com.braniik.slate.data.resolveContentForeground
 import com.braniik.slate.data.resolveEdgeForeground
 import com.braniik.slate.data.saveSettings
-import com.braniik.slate.data.systemWallpaperColorFlow
+import com.braniik.slate.data.systemWallpaperDarkTextFlow
 import com.braniik.slate.data.wallpaperBackground
 import com.braniik.slate.data.wallpaperConfigFlow
 import com.braniik.slate.ui.SystemBarAppearance
@@ -77,22 +77,22 @@ fun SlateApp(homeResetSignal: Int) {
         else null
     }
 
-    val systemColor by remember(wallpaper.mode) {
-        if (wallpaper.mode == "system") context.systemWallpaperColorFlow() else flowOf(null)
+    val systemDarkText by remember(wallpaper.mode) {
+        if (wallpaper.mode == "system") context.systemWallpaperDarkTextFlow() else flowOf(null)
     }.collectAsState(initial = null)
 
     val toolbarPos = settings?.toolbarPosition ?: "top"
     var screenSize by remember { mutableStateOf(IntSize.Zero) }
 
-    val toolbarTextColor = remember(wallpaper, imageBitmap, systemColor, toolbarPos, screenSize) {
-        resolveEdgeForeground(wallpaper, imageBitmap, systemColor, screenSize.width, screenSize.height, toolbarPos)
+    val toolbarTextColor = remember(wallpaper, imageBitmap, systemDarkText, toolbarPos, screenSize) {
+        resolveEdgeForeground(wallpaper, imageBitmap, systemDarkText, screenSize.width, screenSize.height, toolbarPos)
     }
 
-    val statusBarForeground = remember(wallpaper, imageBitmap, systemColor, screenSize) {
-        resolveEdgeForeground(wallpaper, imageBitmap, systemColor, screenSize.width, screenSize.height, "top")
+    val statusBarForeground = remember(wallpaper, imageBitmap, systemDarkText, screenSize) {
+        resolveEdgeForeground(wallpaper, imageBitmap, systemDarkText, screenSize.width, screenSize.height, "top")
     }
-    val navBarForeground = remember(wallpaper, imageBitmap, systemColor, screenSize) {
-        resolveEdgeForeground(wallpaper, imageBitmap, systemColor, screenSize.width, screenSize.height, "bottom")
+    val navBarForeground = remember(wallpaper, imageBitmap, systemDarkText, screenSize) {
+        resolveEdgeForeground(wallpaper, imageBitmap, systemDarkText, screenSize.width, screenSize.height, "bottom")
     }
 
     SystemBarAppearance(statusBarForeground, navBarForeground)
@@ -104,7 +104,7 @@ fun SlateApp(homeResetSignal: Int) {
             .wallpaperBackground(wallpaper, imageBitmap)
     ) {
         CompositionLocalProvider(
-            LocalWallpaperTextColor provides resolveContentForeground(wallpaper, systemColor),
+            LocalWallpaperTextColor provides resolveContentForeground(wallpaper, systemDarkText),
             LocalToolbarTextColor provides toolbarTextColor,
             LocalWallpaperImage provides imageBitmap
         ) {

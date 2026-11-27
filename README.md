@@ -97,10 +97,10 @@ git clone https://github.com/braniik/slate.git
 │   ├── LauncherRole.kt            — the HOME role: who holds it, requesting it, and the system screen that reassigns it
 │   ├── PackageChanges.kt          — flow of app/profile changes via LauncherApps.Callback
 │   ├── SystemWallpaperApplier.kt  — renders wallpaper config to the system wallpaper (skipped in system mode)
-│   ├── SystemWallpaperColor.kt    — flow of the system wallpaper's primary color, for contrast in system mode
+│   ├── SystemWallpaperColor.kt    — whether the system wallpaper wants dark text: Android's hint on 12+, its primary color before
 │   ├── WallpaperConfig.kt         — wallpaper mode (solid/gradient/image/system), colors, gradient, per-edge text color
 │   ├── WallpaperImageStore.kt     — image save (unique file per pick)/load/compress/prune, palette extraction
-│   └── WallpaperSampler.kt        — foreground per edge and for content: image edge-strip sampling, system wallpaper colors
+│   └── WallpaperSampler.kt        — foreground per edge and for content: image edge-strip sampling, system wallpaper hint
 └── ui/
     ├── SystemBars.kt               — status/navigation bar icon appearance (light vs dark)
     ├── drawer/
@@ -167,6 +167,7 @@ git clone https://github.com/braniik/slate.git
 - [x] 1.2 — Swipe-up search, system wallpaper, group drag
 - [x] 1.2.1 — Vertical toolbar title fix, the first contribution
 - [x] 1.2.2 — Higher contrast in settings and over the wallpaper
+- [x] 1.2.3 — Readable toolbar on dark system wallpapers with bright accents
 - [ ] 1.3 — Distribute: space selected freescreen icons evenly
 
 ## Contributing

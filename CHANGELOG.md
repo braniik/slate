@@ -1,5 +1,14 @@
 # Slate Changelog
 
+## 1.2.2 → 1.2.3
+ 
+**1.2.3** is a bugfix release for the system wallpaper mode:
+ 
+- **Readable toolbar on system wallpapers:** In system mode, Slate picked light or dark icons from the wallpaper's "primary color", which Android defines as its most eye-catching color, not its overall brightness.
+On a dark wallpaper with bright accents that meant dark icons on a black screen.
+On Android 12 and newer, Slate now uses Android's own hint for whether dark text suits the wallpaper, the same signal other launchers use.
+Android 10 and 11 keep the old behavior, since the hint doesn't exist there. Reported by @reinold-p (#11).
+
 ## 1.2.1 → 1.2.2
  
 **1.2.2** is a bugfix release for readability:

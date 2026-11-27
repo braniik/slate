@@ -11,41 +11,40 @@ import org.junit.Test
 class SystemWallpaperContrastTest {
 
     private val system = WallpaperConfig(mode = "system")
-    private val light = 0xFFF2F2F2.toInt()
-    private val dark = 0xFF101010.toInt()
+    private val lightColor = 0xFFF2F2F2.toInt()
     private val edges = listOf("top", "bottom", "left", "right")
 
-    private fun edge(config: WallpaperConfig, systemColor: Int?, at: String) =
-        resolveEdgeForeground(config, null, systemColor, 1080, 2400, at)
+    private fun edge(config: WallpaperConfig, systemDarkText: Boolean?, at: String) =
+        resolveEdgeForeground(config, null, systemDarkText, 1080, 2400, at)
 
     @Test
-    fun lightSystemWallpaperGetsDarkTextEverywhere() {
-        edges.forEach { assertEquals(DarkText, edge(system, light, it)) }
-        assertEquals(DarkText, resolveContentForeground(system, light))
+    fun aWallpaperThatPrefersDarkTextGetsItEverywhere() {
+        edges.forEach { assertEquals(DarkText, edge(system, true, it)) }
+        assertEquals(DarkText, resolveContentForeground(system, true))
     }
 
     @Test
-    fun darkSystemWallpaperGetsLightTextEverywhere() {
-        edges.forEach { assertEquals(LightText, edge(system, dark, it)) }
-        assertEquals(LightText, resolveContentForeground(system, dark))
+    fun aWallpaperThatDoesNotGetsLightTextEverywhere() {
+        edges.forEach { assertEquals(LightText, edge(system, false, it)) }
+        assertEquals(LightText, resolveContentForeground(system, false))
     }
 
     @Test
-    fun aWallpaperWithoutColoursReadsAsDark() {
+    fun anUnknownWallpaperReadsAsDark() {
         assertEquals(LightText, edge(system, null, "top"))
         assertEquals(LightText, resolveContentForeground(system, null))
     }
 
     @Test
     fun systemModeIgnoresTheStoredSolidColour() {
-        val leftover = WallpaperConfig(mode = "system", solidColor = light)
-        assertEquals(LightText, resolveContentForeground(leftover, dark))
+        val leftover = WallpaperConfig(mode = "system", solidColor = lightColor)
+        assertEquals(LightText, resolveContentForeground(leftover, false))
     }
 
     @Test
-    fun otherModesIgnoreTheSystemColour() {
-        val solidLight = WallpaperConfig(mode = "solid", solidColor = light)
-        assertEquals(DarkText, resolveContentForeground(solidLight, dark))
-        assertEquals(DarkText, edge(solidLight, dark, "top"))
+    fun otherModesIgnoreTheSystemWallpaper() {
+        val solidLight = WallpaperConfig(mode = "solid", solidColor = lightColor)
+        assertEquals(DarkText, resolveContentForeground(solidLight, false))
+        assertEquals(DarkText, edge(solidLight, false, "top"))
     }
 }
