@@ -319,9 +319,18 @@ fun AppDrawerScreen(
             }
             val onDismiss = { ui.showBlanketSet = false }
 
-            fun applyToSelected(transform: HomeScreenApp.() -> HomeScreenApp) {
+            fun getSelectedApps(): List<HomeScreenApp> {
+                if (targets.isEmpty())
+                    return homeApps
+
+                return homeApps.filter { it.key in targets }
+            }
+
+            fun storeApps(apps: List<HomeScreenApp>) {
+                val appsMap = apps.associateBy { it.key }
+
                 homeAppsStore.update { stored ->
-                    stored.map { if (targets.isEmpty() || it.key in targets) it.transform() else it }
+                    stored.map { app -> appsMap[app.key] ?: app }
                 }
             }
 
@@ -335,7 +344,7 @@ fun AppDrawerScreen(
 
             if (settings.layoutMode == "freescreen") {
                 FreescreenBlanketSetDialog(title, selectedCount, onDismiss, { distributionAxis, transform ->
-                    applyToSelected(transform)
+                    var selectedApps = getSelectedApps().map { it.transform() }
 
                     if ("none" != distributionAxis) {
                         // dynamic getter/"setter", based on axis
@@ -351,29 +360,30 @@ fun AppDrawerScreen(
                             else -> throw IllegalArgumentException("Unknown axis: $distributionAxis")
                         }
 
-                        val sortedApps = homeApps
-                            // only include selected apps
-                            .filter { it.key in targets }
+                        val sortedApps = selectedApps
                             // sort by relevant coordinate position
                             .sortedBy(getPos)
                         val n = sortedApps.size - 1
                         val firstPos = getPos(sortedApps.first())
                         val spacing = (getPos(sortedApps.last()) - firstPos) / n
-                        // map of app key to updated attributes (with coordinate position)
-                        val updatedAppsMap = (1 until n).associate { i ->
-                            sortedApps[i].key to withPos(sortedApps[i], firstPos + (i * spacing))
-                        }
 
-                        homeAppsStore.update { stored ->
-                            stored.map { app -> updatedAppsMap[app.key] ?: app }
+                        selectedApps = sortedApps.mapIndexed { i, app ->
+                            // skip first and last app in the list
+                            if (i in 1 until n)
+                                withPos(app, firstPos + (i * spacing))
+                            else
+                                app
                         }
                     }
+
+                    storeApps(selectedApps)
 
                     ui.showBlanketSet = false
                 })
             } else {
                 ListBlanketSetDialog(title, onDismiss, { transform ->
-                    applyToSelected(transform)
+                    storeApps(getSelectedApps().map { it.transform() })
+
                     ui.showBlanketSet = false
                 })
             }
