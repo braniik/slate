@@ -50,9 +50,13 @@ internal class GroupDrag {
     }
 
     private fun boxOf(app: HomeScreenApp): Rect {
-        val footprint = app.iconSizeDp + 2 * ICON_PADDING_DP
+        val footprint = footprintOf(app)
         return Rect(Offset(app.xPos, app.yPos), sizes[app.key] ?: Size(footprint, footprint))
     }
+}
+
+fun footprintOf(app: HomeScreenApp): Float {
+    return app.iconSizeDp + 2 * ICON_PADDING_DP
 }
 
 internal fun groupDeltaBounds(boxes: List<Rect>, width: Float, height: Float): Rect {
