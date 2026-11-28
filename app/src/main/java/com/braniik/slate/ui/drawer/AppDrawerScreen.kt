@@ -42,10 +42,12 @@ import com.braniik.slate.data.saveToolbarPosition
 import com.braniik.slate.data.saveToolbarTitle
 import com.braniik.slate.data.saveWallpaperConfig
 import com.braniik.slate.data.wallpaperConfigFlow
-import com.braniik.slate.ui.drawer.common.BlanketSetDialog
+import com.braniik.slate.ui.drawer.common.FreescreenBlanketSetDialog
+import com.braniik.slate.ui.drawer.common.ListBlanketSetDialog
 import com.braniik.slate.ui.drawer.common.swipeUp
 import com.braniik.slate.ui.drawer.freescreen.FreescreenEditDialog
 import com.braniik.slate.ui.drawer.freescreen.HomeFreescreen
+import com.braniik.slate.ui.drawer.freescreen.distribute
 import com.braniik.slate.ui.drawer.list.HomeList
 import com.braniik.slate.ui.drawer.list.ListEditDialog
 import com.braniik.slate.ui.drawer.settings.SlateSettingsSheet
@@ -309,17 +311,46 @@ fun AppDrawerScreen(
 
         if (ui.showBlanketSet) {
             val targets = ui.selection
-            BlanketSetDialog(
-                isFreescreen = settings.layoutMode == "freescreen",
-                selectedCount = targets.size,
-                onDismiss = { ui.showBlanketSet = false },
-                onApply = { transform ->
-                    homeAppsStore.update { stored ->
-                        stored.map { if (targets.isEmpty() || it.key in targets) it.transform() else it }
-                    }
-                    ui.showBlanketSet = false
+            val selectedCount = targets.size
+            val title = when (selectedCount) {
+                0 -> "all apps"
+                1 -> "1 app"
+                else -> "$selectedCount apps"
+            }
+            val onDismiss = { ui.showBlanketSet = false }
+
+            fun getSelectedApps(): List<HomeScreenApp> {
+                if (targets.isEmpty())
+                    return homeApps
+
+                return homeApps.filter { it.key in targets }
+            }
+
+            fun storeApps(apps: List<HomeScreenApp>) {
+                val appsMap = apps.associateBy { it.key }
+
+                homeAppsStore.update { stored ->
+                    stored.map { app -> appsMap[app.key] ?: app }
                 }
-            )
+            }
+
+            if (settings.layoutMode == "freescreen") {
+                FreescreenBlanketSetDialog(title, selectedCount, onDismiss, { distributionAxis, transform ->
+                    var selectedApps = getSelectedApps().map { it.transform() }
+
+                    selectedApps = distribute(distributionAxis, selectedApps)
+
+                    storeApps(selectedApps)
+
+                    ui.showBlanketSet = false
+                })
+            } else {
+                ListBlanketSetDialog(title, onDismiss, { transform ->
+                    storeApps(getSelectedApps().map { it.transform() })
+
+                    ui.showBlanketSet = false
+                })
+            }
         }
 
         if (ui.showWallpaperPicker) {
